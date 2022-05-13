@@ -76,6 +76,7 @@ client.on('messageCreate', async msg =>{
         let commandName = msg.content.slice(1).split(/\s+/)[0];
         const command = client.commands.get(commandName);
 	    if (!command) return;
+        if(command.subCmd) commandName += ('/' + msg.content.slice(1).split(/\s+/)[1]);
         console.log('isMsgCommand: ' + commandName + ', guild: ' + msg.guild.name);
         try{
             if(command.tag === 'message') await command.execute(msg, client);

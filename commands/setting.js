@@ -4,6 +4,7 @@ const guild = require('../functions/guildData.js');
 
 module.exports = {
     tag: "guildData",
+    subCmd: true,
 
     /**
      * 
@@ -14,7 +15,6 @@ module.exports = {
     async execute(msg, client, guildData) {
         if(!msg.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
         let text = msg.content.slice(1).split(/\s+/);
-        console.log('              └subCmd: ' + text[1]);
         
         if(['welcomemessage', 'wm'].includes(text[1])) {
             let wm = msg.content.slice(text[0].length + text[1].length + 2);
@@ -28,6 +28,7 @@ module.exports = {
 
         } else if(['vc', 'verifychannel'].includes(text[1])) {
             let channel = text[2];
+            if(!channel) return msg.reply('請在指令後方加入頻道或頻道ID。');
             if(!channel.match(/<#[0-9]+>/) && !channel.match(/[0-9]+/) ) return msg.reply('請在指令後方加入頻道或頻道ID。');
             channel = channel.match(/[0-9]+/)[0];
             msg.guild.channels.fetch(channel).then(channel => {
@@ -45,7 +46,6 @@ module.exports = {
             if(!question || !answer[0]) return msg.reply('請在指令後方加入問題與預設答案。');
             guildData.questionList.push({question, answer});
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-            console.log(guildData);
             msg.reply(
                 `問題新增完成: \n` + 
                 `問題: ${guildData.questionList[guildData.questionList.length - 1].question}\n` + 
@@ -115,6 +115,20 @@ module.exports = {
                 `問題: ${removed.question}\n` + 
                 `回答: ${removed.answer.join('、')}`
             );
+            
+        } else if(['endowrole', 'er'].includes(text[1])) {
+            let role = text[2];
+            if(!role) return msg.reply('請在指令後方加入身分組或身分組ID。');
+            if(!role.match(/<@&[0-9]+>/) && !role.match(/[0-9]+/) ) return msg.reply('請在指令後方加入身分組或身分組ID。');
+            role = role.match(/[0-9]+/)[0];
+            msg.guild.roles.fetch(role).then(role => {
+                if(role.managed) return msg.reply('請不要選擇整合身分組。');
+                guildData.role = role.id;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                msg.reply({content: `賦予身分組設定完成: <@&${guildData.role}> (${guildData.role})。`, allowedMentions: {roles: []}});
+            }).catch(() => {
+                msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
+            })
         }
     }
 }
