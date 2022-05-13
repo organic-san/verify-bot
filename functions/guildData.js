@@ -14,15 +14,12 @@ class GuildData {
         this.verifyMessage = '';
         this.verifyChannel = '';
         this.backstageChannel = '';
+        this.role = '';
         /**
-         * @type {Map<number, {question: string, answer: string[]}>}
-         */
-        this.question = new Map();
-        /**
-         * @type {Array<number>}
+         * @type {Array<{question: string, answer: string[]}>}
          */
         this.questionList = [];
-        this.questionAmount = 0;
+        this.questionGenerateAmount = 0;
         this.isRandonQuestion = false;
 
         this.isWorking = false;
@@ -33,14 +30,41 @@ class GuildData {
      * @param {Object} obj 
      */
     generation(obj) {
+        //this.id = obj.id;
+        //this.name = obj.name;
+        this.welcomeMessage = obj.welcomeMessage ?? '';
+        this.welcomeMessageChannel = obj.welcomeMessageChannel ?? '';
+        this.verifyMessage = obj.verifyMessage ?? '';
+        this.verifyChannel = obj.verifyChannel ?? '';
+        this.backstageChannel = obj.backstageChannel ?? '';
+        this.role = obj.role ?? '';
 
+        this.questionList = obj.questionList ?? [];
+        this.questionGenerateAmount = obj.questionGenerateAmount ?? 0;
+        this.isRandonQuestion = obj.isRandonQuestion ?? false;
+
+        this.isWorking = obj.isWorking ?? false;
     }
 
+    /*
     toJSON() {
         return {
+            "id": this.id,
+            "name": this.name,
+            "welcomeMessage": this.welcomeMessage,
+            "welcomeMessageChannel": this.welcomeMessageChannel,
+            "verifyMessage": this.verifyMessage,
+            "verifyChannel": this.verifyChannel,
+            "role": this.role,
+            "backstageChannel": this.backstageChannel,
+            'questionList': this.questionList,
+            'questionGenerateAmount': this.questionGenerateAmount,
+            'isRandonQuestion': this.isRandonQuestion,
 
+            'isWorking': this.isWorking,
         }
     }
+    */
 
 }
 
