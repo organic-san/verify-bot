@@ -21,6 +21,7 @@ module.exports = {
             .addField('.setting addquestion <question>;<ans1>;<ans2>...\n.setting aq <question>;<ans1>;<ans2>...', '設定驗證問題。問題與答案(可複數)需要用分號分開。')
             .addField('.setting showquestion\n.setting sq', '顯示所有驗證問題。')
             .addField('.setting deletequestion\n.setting dq', '刪除驗證問題。')
+            .addField('.setting questionamount <amount>\n.setting qa <amount>', '設定要產生的問題總數。產生的問題將會隨機抽取直到達到總數。')
             .addField('.setting endowrole <role>\n.setting er <role>', '設定通過驗證後會賦予被驗證者的身分組。')
             .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
             .setTimestamp()

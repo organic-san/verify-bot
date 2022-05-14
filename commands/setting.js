@@ -110,6 +110,7 @@ module.exports = {
             let removed = ql[id - 1];
             ql = ql.splice(id - 1, 1);
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            //TODO: 因應問題數量減少所以對產生問題數&系統開關做的調整
             collected.reply(
                 `問題移除完成: \n` + 
                 `問題: ${removed.question}\n` + 
@@ -129,6 +130,24 @@ module.exports = {
             }).catch(() => {
                 msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
             })
-        }
+        } else if(['questionamount', 'qa'].includes(text[1])) {
+            let amount = parseInt(text[2]);
+            if(amount <= 0 || amount > guildData.questionList.length || amount !== amount) 
+                return msg.reply('請不要超過目前的問題總數(' + guildData.questionList.length +'個)。');
+                guildData.questionGenerateAmount = amount;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                msg.reply({content: `問題產生數量調整完成: 設定為${guildData.questionGenerateAmount}個。`});
+
+        }/* else if(['start'].includes(text[1])) {
+            //TODO: 檢查前面步驟是否完備
+            guildData.isWorking = true;
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            msg.reply({content: `開啟系統運作。`});
+        } else if(['stop'].includes(text[1])) {
+            //TODO: 檢查前面步驟是否完備
+            guildData.isWorking = false;
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            msg.reply({content: `關閉系統運作。`});
+        }*/
     }
 }
