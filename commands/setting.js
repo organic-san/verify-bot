@@ -16,7 +16,7 @@ module.exports = {
         if(!msg.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
         let text = msg.content.slice(1).split(/\s+/);
         
-        if(['welcomemessage', 'wm'].includes(text[1])) {
+        if(['welcome-message', 'wm'].includes(text[1])) {
             let wm = msg.content.slice(text[0].length + text[1].length + 2);
             if(wm.length <= 0) msg.reply('請在指令後方補上要設定的句子。')
             else {
@@ -26,7 +26,7 @@ module.exports = {
                 
             }
 
-        } else if(['vc', 'verifychannel'].includes(text[1])) {
+        } else if(['vc', 'verify-channel'].includes(text[1])) {
             let channel = text[2];
             if(!channel) return msg.reply('請在指令後方加入頻道或頻道ID。');
             if(!channel.match(/<#[0-9]+>/) && !channel.match(/[0-9]+/) ) return msg.reply('請在指令後方加入頻道或頻道ID。');
@@ -39,7 +39,20 @@ module.exports = {
                 msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
             })
             
-        } else if(['aq', 'addquestion'].includes(text[1])) {
+        } else if(['bc', 'backstage-channel'].includes(text[1])) {
+            let channel = text[2];
+            if(!channel) return msg.reply('請在指令後方加入頻道或頻道ID。');
+            if(!channel.match(/<#[0-9]+>/) && !channel.match(/[0-9]+/) ) return msg.reply('請在指令後方加入頻道或頻道ID。');
+            channel = channel.match(/[0-9]+/)[0];
+            msg.guild.channels.fetch(channel).then(channel => {
+                guildData.backstageChannel = channel.id;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                msg.reply(`後台頻道設定完成: <#${guildData.backstageChannel}> (${guildData.backstageChannel})。`);
+            }).catch(() => {
+                msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
+            })
+            
+        } else if(['aq', 'add-question'].includes(text[1])) {
             text[0] = ''; text[1] = '';
             let question = text.join(' ').split(';')[0].trim();
             let answer = text.join(' ').split(';').slice(1);
@@ -52,7 +65,7 @@ module.exports = {
                 `回答: ${guildData.questionList[guildData.questionList.length - 1].answer.join('、')}`
             );
 
-        } else if(['showquestion', 'sq'].includes(text[1])) {
+        } else if(['show-question', 'sq'].includes(text[1])) {
             let ql = guildData.questionList;
             if(ql.length === 0) return msg.reply({
                 content: '目前沒有問題可以顯示，請先新增問題。',
@@ -77,7 +90,7 @@ module.exports = {
                 }
             }
             
-        } else if(['deletequestion', 'dq'].includes(text[1])) {
+        } else if(['delete-question', 'dq'].includes(text[1])) {
             let ql = guildData.questionList;
             if(ql.length === 0) return msg.reply('目前沒有問題可以刪除，請先新增問題。')
             for(let i = 0; i < Math.ceil(ql.length / 10); i++) {
@@ -109,15 +122,37 @@ module.exports = {
             if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
             let removed = ql[id - 1];
             ql = ql.splice(id - 1, 1);
-            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-            //TODO: 因應問題數量減少所以對產生問題數&系統開關做的調整
-            collected.reply(
-                `問題移除完成: \n` + 
-                `問題: ${removed.question}\n` + 
-                `回答: ${removed.answer.join('、')}`
-            );
+            if(ql.length <= 0) {
+                guildData.isWorking = false;
+                guildData.questionGenerateAmount = 0;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                collected.reply(
+                    `問題移除完成: \n` + 
+                    `問題: ${removed.question}\n` + 
+                    `回答: ${removed.answer.join('、')}\n` + 
+                    `同時因為問題數量不足，因此停止驗證系統運作。`
+                );
+
+            } else if(ql.length < guildData.questionGenerateAmount) {
+                guildData.questionGenerateAmount = ql.length;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                collected.reply(
+                    `問題移除完成: \n` + 
+                    `問題: ${removed.question}\n` + 
+                    `回答: ${removed.answer.join('、')}\n`
+                    `同時將產生的問題數量調整為與現有問題數量相當: ${guildData.questionGenerateAmount} 個。`
+                );
+            } else {
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                collected.reply(
+                    `問題移除完成: \n` + 
+                    `問題: ${removed.question}\n` + 
+                    `回答: ${removed.answer.join('、')}`
+                );
+            }
             
-        } else if(['endowrole', 'er'].includes(text[1])) {
+            
+        } else if(['endow-role', 'er'].includes(text[1])) {
             let role = text[2];
             if(!role) return msg.reply('請在指令後方加入身分組或身分組ID。');
             if(!role.match(/<@&[0-9]+>/) && !role.match(/[0-9]+/) ) return msg.reply('請在指令後方加入身分組或身分組ID。');
@@ -130,7 +165,7 @@ module.exports = {
             }).catch(() => {
                 msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
             })
-        } else if(['questionamount', 'qa'].includes(text[1])) {
+        } else if(['question-amount', 'qa'].includes(text[1])) {
             let amount = parseInt(text[2]);
             if(amount <= 0 || amount > guildData.questionList.length || amount !== amount) 
                 return msg.reply('請不要超過目前的問題總數(' + guildData.questionList.length +'個)。');
