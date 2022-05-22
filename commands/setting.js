@@ -16,6 +16,7 @@ module.exports = {
         if(!msg.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
         let text = msg.content.slice(1).split(/\s+/);
         
+        /*
         if(['welcome-message', 'wm'].includes(text[1])) {
             let wm = msg.content.slice(text[0].length + text[1].length + 2);
             if(wm.length <= 0) msg.reply('請在指令後方補上要設定的句子。')
@@ -26,10 +27,11 @@ module.exports = {
                 
             }
 
-        } else if(['vc', 'verify-channel'].includes(text[1])) {
+        } else*/ if(['vc', 'verify-channel'].includes(text[1])) {
             let channel = text[2];
             if(!channel) return msg.reply('請在指令後方加入頻道或頻道ID。');
             if(!channel.match(/<#[0-9]+>/) && !channel.match(/[0-9]+/) ) return msg.reply('請在指令後方加入頻道或頻道ID。');
+            if(channel == guildData.backstageChannel) return msg.reply('請不要將驗證頻道與後台頻道設為相同的頻道。');
             channel = channel.match(/[0-9]+/)[0];
             msg.guild.channels.fetch(channel).then(channel => {
                 guildData.verifyChannel = channel.id;
@@ -44,6 +46,7 @@ module.exports = {
             if(!channel) return msg.reply('請在指令後方加入頻道或頻道ID。');
             if(!channel.match(/<#[0-9]+>/) && !channel.match(/[0-9]+/) ) return msg.reply('請在指令後方加入頻道或頻道ID。');
             channel = channel.match(/[0-9]+/)[0];
+            if(channel == guildData.verifyChannel) return msg.reply('請不要將後台頻道與驗證頻道設為相同的頻道。');
             msg.guild.channels.fetch(channel).then(channel => {
                 guildData.backstageChannel = channel.id;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
@@ -150,8 +153,7 @@ module.exports = {
                     `回答: ${removed.answer.join('、')}`
                 );
             }
-            
-            
+
         } else if(['endow-role', 'er'].includes(text[1])) {
             let role = text[2];
             if(!role) return msg.reply('請在指令後方加入身分組或身分組ID。');
@@ -165,24 +167,65 @@ module.exports = {
             }).catch(() => {
                 msg.reply('請正確輸入在本伺服器的頻道或頻道ID。');
             })
+
         } else if(['question-amount', 'qa'].includes(text[1])) {
             let amount = parseInt(text[2]);
-            if(amount <= 0 || amount > guildData.questionList.length || amount !== amount) 
+            if(amount < 0 || amount > guildData.questionList.length || amount !== amount) 
                 return msg.reply('請不要超過目前的問題總數(' + guildData.questionList.length +'個)。');
                 guildData.questionGenerateAmount = amount;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-                msg.reply({content: `問題產生數量調整完成: 設定為${guildData.questionGenerateAmount}個。`});
+                if(amount > 0)
+                    msg.reply({content: `問題產生數量調整完成: 設定為${guildData.questionGenerateAmount}個。`});
+                else
+                    msg.reply({content: `問題產生數量調整完成: 設定為會依序顯示所有問題。`});
 
-        }/* else if(['start'].includes(text[1])) {
-            //TODO: 檢查前面步驟是否完備
-            guildData.isWorking = true;
-            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-            msg.reply({content: `開啟系統運作。`});
+        } else if(['start'].includes(text[1])) {
+            if(guildData.isWorking) return msg.reply({content: `系統已經是開啟狀態。`});
+            let step = [false, false, false, true, false]; //驗證頻道，後台頻道，問題數量，問題產生數量，賦予身分組
+            if(guildData.verifyChannel) step[0] = true;
+            if(guildData.backstageChannel) step[1] = true;
+            if(guildData.questionList.length > 0) step[2] = true;
+            //if(guildData.questionGenerateAmount > 0) step[3] = true;
+            if(guildData.role) step[4] = true;
+            if(step[0] && step[1] && step[2] && step[3] && step[4]) {
+                guildData.isWorking = true;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                msg.reply({content: `開啟系統運作。`});
+            } else {
+                let text = `無法開啟系統，因為尚未設定以下內容: ` + 
+                    (step[0] ? '' : '驗證頻道、') + 
+                    (step[1] ? '' : '後台頻道、') + 
+                    (step[2] ? '' : '驗證用問題、') + 
+                    //(step[3] ? '' : '問題產生數量\n') + 
+                    (step[4] ? '' : '賦予身分組、');
+                msg.reply(text.slice(0, -1));
+            }
+
         } else if(['stop'].includes(text[1])) {
-            //TODO: 檢查前面步驟是否完備
+            if(!guildData.isWorking) return msg.reply({content: `系統已經是關閉狀態。`});
             guildData.isWorking = false;
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
             msg.reply({content: `關閉系統運作。`});
-        }*/
+
+        } else if(['show-all', 'sa'].includes(text[1])) {
+            let vc = guildData.verifyChannel ? `<#${guildData.verifyChannel}> (${guildData.verifyChannel})` : '尚未設定。';
+            let bc = guildData.backstageChannel ? `<#${guildData.backstageChannel}> (${guildData.backstageChannel})` : '尚未設定。';
+            let role = guildData.role ? `<@&${guildData.role}> (${guildData.role})` : '尚未設定。';
+            const embed = new Discord.MessageEmbed()
+                .setColor(process.env.EMBEDCOLOR)
+                .setTitle(`**${msg.guild.name}** 目前的設定`)
+                //.addField('.setting welcome-message <message>\n.setting wm <message>', '設定歡迎訊息。')
+                .addField('驗證頻道(verify-channel)', vc)
+                .addField('後台頻道(backstage-channel)', bc)
+                .addField('驗證問題一覽', `已設定 ${guildData.questionList.length} 個驗證問題\n個別詳細請使用指令\`.setting show-question\`查詢。`)
+                .addField('驗證問題產生數量(question-amount)', `${guildData.questionGenerateAmount} 個`)
+                .addField('賦予身分組(endow-role)', role)
+                .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
+                .setTimestamp()
+            msg.reply({
+                embeds: [embed],
+                allowedMentions: {repliedUser: false}
+            })
+        }
     }
 }
