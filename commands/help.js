@@ -15,7 +15,8 @@ module.exports = {
             .setTitle(`${client.user.tag} 驗證功能使用說明`)
             .setDescription(`問題式驗證機器人。\n指令前輟: \`.\``)
             .addField('.help', '顯示指令功能一覽表')
-            .addField('.setting', '功能設定')
+            .addField('.verify', '手動開始驗證程序。')
+            .addField('.setting', '功能設定。')
             //.addField('.setting welcome-message <message>\n.setting wm <message>', '設定歡迎訊息。')
             .addField('.setting verify-channel <channel>\n.setting vc <channel>', '設定驗證頻道。')
             .addField('.setting backstage-channel <channel>\n.setting bc <channel>', '設定後台頻道，進行人工驗證與訊息發送。')
@@ -24,6 +25,8 @@ module.exports = {
             .addField('.setting delete-question\n.setting dq', '刪除驗證問題。')
             .addField('.setting question-amount <amount>\n.setting qa <amount>', '設定要產生的問題總數。產生的問題將會隨機抽取直到達到總數。')
             .addField('.setting endow-role <role>\n.setting er <role>', '設定通過驗證後會賦予被驗證者的身分組。')
+            .addField('.setting start', '開啟系統。需要先行完成驗證頻道、後台頻道、至少一個驗證問題、賦予身分組才能開啟。')
+            .addField('.setting stop', '關閉系統。')
             .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
             .setTimestamp()
         msg.reply({
