@@ -25,6 +25,12 @@ for (const file of commandFiles) {
 }
 
 /**
+ * @type {Array<string>}
+ */
+let verifying = [];
+
+
+/**
  * @type {Map<string, guild.guildData>}
  */
 const guildData = new Map();
@@ -64,6 +70,18 @@ client.on('ready', () =>{
 
 client.on('interactionCreate', async interaction => {
     if(!isready) return;
+    if(!interaction.isButton()) return;
+    let data = interaction.customId.split(';');
+    console.log(data)
+    if(data[0] !== 'verify') return;
+    if(data[1] === 'pass') {
+
+
+    } else if(data[1] === 'fail') {
+
+    } else if(data[1] === 'kick') {
+
+    }
 
 });
 
@@ -81,6 +99,7 @@ client.on('messageCreate', async msg =>{
         try{
             if(command.tag === 'message') await command.execute(msg, client);
             if(command.tag === 'guildData') await command.execute(msg, client, guildData.get(msg.guild.id));
+            if(command.tag === 'guildDataverifing') await command.execute(msg, client, guildData.get(msg.guild.id), verifying);
         }catch(err) {
             console.log(err);msg.reply('發生意外錯誤，停止本次操作');
         }
@@ -88,10 +107,9 @@ client.on('messageCreate', async msg =>{
 
 })
 
-client.on('guildMemberAdd', async msg => {
-    let gData = guildData.get(msg.guild.id);
+client.on('guildMemberAdd', async member => {
+    let gData = guildData.get(member.guild.id);
 
     if(!gData.isWorking) return;
-
     
 })

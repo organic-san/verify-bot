@@ -34,6 +34,7 @@ module.exports = {
             if(channel == guildData.backstageChannel) return msg.reply('請不要將驗證頻道與後台頻道設為相同的頻道。');
             channel = channel.match(/[0-9]+/)[0];
             msg.guild.channels.fetch(channel).then(channel => {
+                if(channel.type !== 'GUILD_TEXT') return msg.reply('請不要輸入文字頻道以外的頻道。');
                 guildData.verifyChannel = channel.id;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
                 msg.reply(`驗證頻道設定完成: <#${guildData.verifyChannel}> (${guildData.verifyChannel})。`);
@@ -48,6 +49,7 @@ module.exports = {
             channel = channel.match(/[0-9]+/)[0];
             if(channel == guildData.verifyChannel) return msg.reply('請不要將後台頻道與驗證頻道設為相同的頻道。');
             msg.guild.channels.fetch(channel).then(channel => {
+                if(channel.type !== 'GUILD_TEXT') return msg.reply('請不要輸入文字頻道以外的頻道。');
                 guildData.backstageChannel = channel.id;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
                 msg.reply(`後台頻道設定完成: <#${guildData.backstageChannel}> (${guildData.backstageChannel})。`);
@@ -179,7 +181,7 @@ module.exports = {
                 else
                     msg.reply({content: `問題產生數量調整完成: 設定為會依序顯示所有問題。`});
 
-        } else if(['start'].includes(text[1])) {
+        } else if(['open'].includes(text[1])) {
             if(guildData.isWorking) return msg.reply({content: `系統已經是開啟狀態。`});
             let step = [false, false, false, true, false]; //驗證頻道，後台頻道，問題數量，問題產生數量，賦予身分組
             if(guildData.verifyChannel) step[0] = true;
@@ -201,7 +203,7 @@ module.exports = {
                 msg.reply(text.slice(0, -1));
             }
 
-        } else if(['stop'].includes(text[1])) {
+        } else if(['close'].includes(text[1])) {
             if(!guildData.isWorking) return msg.reply({content: `系統已經是關閉狀態。`});
             guildData.isWorking = false;
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));

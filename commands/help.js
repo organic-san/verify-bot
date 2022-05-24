@@ -10,6 +10,8 @@ module.exports = {
      * @param {Discord.Client<boolean>} client
      */
     async execute(msg, client) {
+        if(!msg.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
+
         const embed = new Discord.MessageEmbed()
             .setColor(process.env.EMBEDCOLOR)
             .setTitle(`${client.user.tag} 驗證功能使用說明`)
@@ -25,8 +27,8 @@ module.exports = {
             .addField('.setting delete-question\n.setting dq', '刪除驗證問題。')
             .addField('.setting question-amount <amount>\n.setting qa <amount>', '設定要產生的問題總數。產生的問題將會隨機抽取直到達到總數。')
             .addField('.setting endow-role <role>\n.setting er <role>', '設定通過驗證後會賦予被驗證者的身分組。')
-            .addField('.setting start', '開啟系統。需要先行完成驗證頻道、後台頻道、至少一個驗證問題、賦予身分組才能開啟。')
-            .addField('.setting stop', '關閉系統。')
+            .addField('.setting open', '開啟系統。需要先行完成驗證頻道、後台頻道、至少一個驗證問題、賦予身分組才能開啟。')
+            .addField('.setting close', '關閉系統。')
             .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
             .setTimestamp()
         msg.reply({
