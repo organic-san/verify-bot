@@ -25,7 +25,7 @@ module.exports = {
         if(!guildData.isWorking) return msg.reply('現在系統並未運作，請聯繫管理員。\nThe system is not working now, please contact the administrator.');
         verifying.push(msg.author.id);
         let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
-        backstage.send(`${msg.author} (${msg.author.id}) 開始手動驗證。`);
+        backstage.send(`${msg.author} (${msg.author.id}) 手動開始驗證程序。`);
         let threadMsg = await msg.reply(
             msg.author.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
             'please join to the thread below to start the server join validation process.'
@@ -91,13 +91,15 @@ module.exports = {
                             .setCustomId(`verify;pass;${msg.author.id};${thread.id};${threadMsg.id}`)
                             .setStyle('SUCCESS'),
                         new Discord.MessageButton()
-                            .setLabel('不通過')
+                            .setLabel('駁回')
                             .setCustomId(`verify;fail;${msg.author.id};${thread.id};${threadMsg.id}`)
                             .setStyle('PRIMARY'),
+                            /*
                         new Discord.MessageButton()
                             .setLabel('踢出')
                             .setCustomId(`verify;kick;${msg.author.id};${thread.id};${threadMsg.id}`)
                             .setStyle('DANGER'),
+                            */
                     ])
 
                     backstage.send({embeds: [embed], components: [button]});
@@ -109,7 +111,7 @@ module.exports = {
                         '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
                         'Congratulations, you have been verified and can officially join the server.'
                     );
-                    backstage.send(`${msg.author} (${msg.author.id}) 手動驗證自動通過。`);
+                    backstage.send(`${msg.author} (${msg.author.id}) 驗證自動通過。`);
                     thread.delete();
 
                 }
