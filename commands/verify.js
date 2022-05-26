@@ -18,6 +18,10 @@ module.exports = {
             '只能在驗證頻道輸入指令。\n' + 
             'You can only enter commands in the verification channel.'
         );
+        if(msg.member.roles.cache.has(guildData.role)) return msg.reply(
+            '您已經通過驗證。\n' + 
+            'You have been verified.'
+        );
         if(verifying.includes(msg.author.id)) return msg.reply(
             '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
             'You have started the verification process, please go to to your verification thread to continue the verification process.'

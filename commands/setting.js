@@ -193,6 +193,8 @@ module.exports = {
                 guildData.isWorking = true;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
                 msg.reply({content: `開啟系統運作。`});
+                let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
+                backstage.send(`開啟系統運作。`);
             } else {
                 let text = `無法開啟系統，因為尚未設定以下內容: ` + 
                     (step[0] ? '' : '驗證頻道、') + 
@@ -208,6 +210,8 @@ module.exports = {
             guildData.isWorking = false;
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
             msg.reply({content: `關閉系統運作。`});
+            let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
+            backstage.send(`關閉系統運作。`);
 
         } else if(['show-all', 'sa'].includes(text[1])) {
             let vc = guildData.verifyChannel ? `<#${guildData.verifyChannel}> (${guildData.verifyChannel})` : '尚未設定。';

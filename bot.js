@@ -149,6 +149,7 @@ client.on('messageCreate', async msg =>{
 })
 
 client.on('guildMemberAdd', async member => {
+    if(!isready) return;
     let gData = guildData.get(member.guild.id);
     /**
      * @type {Discord.TextChannel}
