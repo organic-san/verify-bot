@@ -67,6 +67,7 @@ module.exports = {
 
         collector.on('collect', (cmsg) => {
             if(cmsg.author.id !== msg.author.id) return;
+            if(answer.length > queAmount) return;
             answer.push(cmsg.content);
             if(cmsg.deletable) cmsg.delete().catch(() => {});
             step++;
@@ -117,8 +118,9 @@ module.exports = {
                     );
                     backstage.send(`${msg.author} (${msg.author.id}) 驗證自動通過。`);
                     thread.delete();
-
+                    
                 }
+                collector.stop('end');
             }
         });
 
