@@ -97,13 +97,23 @@ client.on('interactionCreate', async interaction => {
     if(data[1] === 'pass') {
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         thread.delete().catch(() => {});
-        user.roles.add(gData.role);
-        threadMsg.edit(
-            `<@${data[2]}>\n` + 
-            '恭喜您通過驗證，可以正式加入伺服器。\n' + 
-            'Congratulations, you have been verified and can officially join the server.'
-        );
-        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 驗證通過。`, embeds: [], components: []});
+        let err = false;
+        await user.roles.add(gData.role).catch(() => err = true);
+        if(err) {
+            threadMsg.edit(
+                `<@${data[2]}>\n` + 
+                '發生錯誤：權限不足，請聯絡管理員。\n' + 
+                'Error: Permissions are not enough, please contact the administrator.'
+            );
+            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 驗證過程發生錯誤：身分組權限不足。`, embeds: [], components: []});
+        } else {
+            threadMsg.edit(
+                `<@${data[2]}>\n` + 
+                '恭喜您通過驗證，可以正式加入伺服器。\n' + 
+                'Congratulations, you have been verified and can officially join the server.'
+            );
+            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 驗證通過。`, embeds: [], components: []});
+        }
 
     } else if(data[1] === 'fail') {
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
@@ -121,7 +131,19 @@ client.on('interactionCreate', async interaction => {
 
 
     } else if(data[1] === 'kick') {
-        //TODO: 待保留
+        if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`}); //TODO: 除錯
+        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
+        thread.delete().catch(() => {});
+        threadMsg.edit(
+            `<@${data[2]}>\n` + 
+            '驗證失敗。Verification failed.'
+        );
+        await user.user.send(
+            `管理員駁回了您的申請，因此您被踢出 **${interaction.guild.name}**。\n` + 
+            `The administrator rejected your request, so you were kicked from **${interaction.guild.name}**.`
+        ).catch(() => {});
+        await user.kick().catch(() => {});
+        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 踢出伺服器。`, embeds: [], components: []});
     }
 
 });
@@ -150,6 +172,7 @@ client.on('messageCreate', async msg =>{
 
 client.on('guildMemberAdd', async member => {
     if(!isready) return;
+    if(member.user.bot) return;
     let gData = guildData.get(member.guild.id);
     /**
      * @type {Discord.TextChannel}
@@ -194,7 +217,7 @@ client.on('guildMemberAdd', async member => {
 
     let collector = thread.createMessageCollector({time: 60 * 60 * 1000});
 
-    collector.on('collect', (cmsg) => {
+    collector.on('collect', async (cmsg) => {
         if(cmsg.author.id !== member.id) return;
         answer.push(cmsg.content);
         if(cmsg.deletable) cmsg.delete().catch(() => {});
@@ -202,6 +225,7 @@ client.on('guildMemberAdd', async member => {
         if(step <= queAmount) {
             thread.send(`${step}. ${queList[step - 1].question}`);
         } else {
+            if(step > queAmount + 1) return;
             let inspection = 0;
             answer.forEach((ans, ind) => {
                 if(!queList[ind].answer.includes(ans)) inspection++;
@@ -227,24 +251,32 @@ client.on('guildMemberAdd', async member => {
                         .setLabel('駁回')
                         .setCustomId(`verify;fail;${member.id};${thread.id};${threadMsg.id}`)
                         .setStyle('PRIMARY'),
-                        /*
                     new Discord.MessageButton()
                         .setLabel('踢出')
                         .setCustomId(`verify;kick;${member.id};${thread.id};${threadMsg.id}`)
                         .setStyle('DANGER'),
-                        */
                 ])
 
                 backstage.send({embeds: [embed], components: [button]});
             } else {
                 if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
-                member.roles.add(gData.role);
-                threadMsg.edit(
-                    member.toString() +
-                    '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
-                    'Congratulations, you have been verified and can officially join the server.'
-                );
-                backstage.send(`${member} (${member.id}) 驗證自動通過。`);
+                let err = false;
+                await member.roles.add(gData.role).catch(() => err = true);
+                if(err) {
+                    threadMsg.edit(
+                        member.toString() +
+                        '\n發生錯誤：權限不足，請聯絡管理員。\n' + 
+                        'Error: Permissions are not enough, please contact the administrator.'
+                    );
+                    backstage.send(`${member} (${member.id}) 驗證過程發生錯誤：身分組權限不足。`);
+                } else {
+                    threadMsg.edit(
+                        member.toString() +
+                        '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
+                        'Congratulations, you have been verified and can officially join the server.'
+                    );
+                    backstage.send(`${member} (${member.id}) 驗證自動通過。`);
+                }
                 thread.delete();
 
             }

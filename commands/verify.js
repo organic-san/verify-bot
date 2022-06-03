@@ -65,7 +65,7 @@ module.exports = {
 
         let collector = thread.createMessageCollector({time: 60 * 60 * 1000});
 
-        collector.on('collect', (cmsg) => {
+        collector.on('collect', async (cmsg) => {
             if(cmsg.author.id !== msg.author.id) return;
             if(answer.length > queAmount) return;
             answer.push(cmsg.content);
@@ -99,26 +99,33 @@ module.exports = {
                             .setLabel('駁回')
                             .setCustomId(`verify;fail;${msg.author.id};${thread.id};${threadMsg.id}`)
                             .setStyle('PRIMARY'),
-                            /*
                         new Discord.MessageButton()
                             .setLabel('踢出')
                             .setCustomId(`verify;kick;${msg.author.id};${thread.id};${threadMsg.id}`)
-                            .setStyle('DANGER'),
-                            */
+                            .setStyle('DANGER')
                     ])
 
                     backstage.send({embeds: [embed], components: [button]});
                 } else {
                     if(verifying.findIndex((i => i === msg.author.id)) >= 0) verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
-                    msg.member.roles.add(guildData.role);
-                    threadMsg.edit(
-                        msg.author.toString() +
-                        '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
-                        'Congratulations, you have been verified and can officially join the server.'
-                    );
-                    backstage.send(`${msg.author} (${msg.author.id}) 驗證自動通過。`);
                     thread.delete();
-                    
+                    let err = false;
+                    await msg.member.roles.add(guildData.role).catch(() => err = true);
+                    if(err) {
+                        threadMsg.edit(
+                            msg.author.toString() +
+                            '發生錯誤：權限不足，請聯絡管理員。\n' + 
+                            'Error: Permissions are not enough, please contact the administrator.'
+                        );
+                        backstage.send(`${msg.author} (${msg.author.id}) 驗證過程發生錯誤：身分組權限不足。`);
+                    } else {
+                        threadMsg.edit(
+                            msg.author.toString() +
+                            '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
+                            'Congratulations, you have been verified and can officially join the server.'
+                        );
+                        backstage.send(`${msg.author} (${msg.author.id}) 驗證自動通過。`);
+                    }
                 }
                 collector.stop('end');
             }
