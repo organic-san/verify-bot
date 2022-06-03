@@ -181,6 +181,17 @@ module.exports = {
                 else
                     msg.reply({content: `問題產生數量調整完成: 設定為會依序顯示所有問題。`});
 
+        } else if(['kt', 'kick-timelimit'].includes(text[1])) {
+            let timelimit = parseInt(text[2]);
+            if(timelimit < 0 || timelimit !== timelimit) 
+                return msg.reply('請設定正確的時間長度(t>0)。');
+                guildData.verifyTimelimit = timelimit;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                if(timelimit > 0)
+                    msg.reply({content: `入群驗證逾時踢出時間設定完成: ${guildData.verifyTimelimit} 分鐘。`});
+                else
+                    msg.reply({content: `入群驗證逾時踢出時間設定完成: 操作逾時後不踢出(逾時設為60分鐘)。`});
+
         } else if(['open'].includes(text[1])) {
             if(guildData.isWorking) return msg.reply({content: `系統已經是開啟狀態。`});
             let step = [false, false, false, true, false]; //驗證頻道，後台頻道，問題數量，問題產生數量，賦予身分組

@@ -63,7 +63,7 @@ module.exports = {
 
         await thread.send(`${step}. ${queList[0].question}`);
 
-        let collector = thread.createMessageCollector({time: 60 * 60 * 1000});
+        let collector = thread.createMessageCollector({time: (guildData.verifyTimelimit === 0 ? 60 : guildData.verifyTimelimit) * 60 * 1000});
 
         collector.on('collect', async (cmsg) => {
             if(cmsg.author.id !== msg.author.id) return;
@@ -131,15 +131,29 @@ module.exports = {
             }
         });
 
-        collector.on('end', (c, r) => {
+        collector.on('end', async (c, r) => {
             if(r === 'time') {
                 if(verifying.findIndex((i => i === msg.author.id)) >= 0) verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
-                threadMsg.edit(
-                    msg.author.toString() + 
-                    '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
-                    'Timeout, verification failed. Please type `.verify` to restart the verification again.'
-                );
                 thread.delete();
+                if(guildData.verifyTimelimit === 0) {
+                    threadMsg.edit(
+                        msg.author.toString() + 
+                        '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
+                        'Timeout, verification failed. Please type `.verify` to restart the verification again.'
+                    );
+                } else {
+                    threadMsg.edit(
+                        msg.author.toString() + 
+                        '\n逾時，驗證失敗。\n' + 
+                        'Timeout, verification failed.'
+                    );
+                    if(!msg.member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author}。`});
+                    await msg.author.send(
+                        `由於您未在時間限制內完成驗證，因此您被踢出 **${msg.guild.name}**。\n` + 
+                        `You have been kicked from **${msg.guild.name}** because you did not complete the verification within the time limit.`
+                    ).catch(() => {});
+                    await msg.member.kick().catch(() => {});
+                }
             }
             
         })

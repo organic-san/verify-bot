@@ -131,7 +131,7 @@ client.on('interactionCreate', async interaction => {
 
 
     } else if(data[1] === 'kick') {
-        if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`}); //TODO: 除錯
+        if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         thread.delete().catch(() => {});
         threadMsg.edit(
@@ -215,7 +215,7 @@ client.on('guildMemberAdd', async member => {
 
     await thread.send(`${step}. ${queList[0].question}`);
 
-    let collector = thread.createMessageCollector({time: 60 * 60 * 1000});
+    let collector = thread.createMessageCollector({time: (gData.verifyTimelimit === 0 ? 60 : gData.verifyTimelimit) * 60 * 1000});
 
     collector.on('collect', async (cmsg) => {
         if(cmsg.author.id !== member.id) return;
@@ -283,17 +283,29 @@ client.on('guildMemberAdd', async member => {
         }
     });
 
-    collector.on('end', (c, r) => {
+    collector.on('end', async (c, r) => {
         if(r === 'time') {
             if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
-            threadMsg.edit(
-                member.toString() + 
-                '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
-                'Timeout, verification failed. Please type `.verify` to restart the verification again.'
-            );
             thread.delete();
+            if(gData.verifyTimelimit === 0) {
+                threadMsg.edit(
+                    member.toString() + 
+                    '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
+                    'Timeout, verification failed. Please type `.verify` to restart the verification again.'
+                );
+            } else {
+                threadMsg.edit(
+                    member.toString() + 
+                    '\n逾時，驗證失敗。\n' + 
+                    'Timeout, verification failed.'
+                );
+                if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author}。`});
+                await member.send(
+                    `由於您未在時間限制內完成驗證，因此您被踢出 **${member.guild.name}**。\n` + 
+                    `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`
+                ).catch(() => {});
+                await member.kick().catch(() => {});
+            }
         }
-        
     })
-    
 })

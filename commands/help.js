@@ -31,6 +31,7 @@ module.exports = {
             .addField('.setting question-amount <amount>\n.setting qa <amount>', 
                 '設定要產生的問題總數。產生的問題將會隨機抽取直到達到設定的總數，或者當設定為0時會依序詢問所有問題。')
             .addField('.setting endow-role <role>\n.setting er <role>', '設定通過驗證後會賦予被驗證者的身分組。')
+            .addField('.setting kick-timelimit <time>\n.setting kt <time>', '設定入群驗證逾時踢出時間，時間單位為分。入群者不在指定時間內完成驗證將會被踢出，設為0則不會踢出。')
             .addField('.setting open', 
                 '開啟系統。需要先行設定驗證頻道、後台頻道、至少一個驗證問題及賦予身分組才能開啟。\
                 設為開啟時，加入伺服器或輸入指令\`.verify\`會開啟驗證程序。')
