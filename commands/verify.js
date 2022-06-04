@@ -37,9 +37,13 @@ module.exports = {
         let thread = await threadMsg.startThread({name: `驗證 - ${msg.author.id}`, autoArchiveDuration: 1440});
         let queAmount = guildData.questionGenerateAmount === 0 ? guildData.questionList.length : guildData.questionGenerateAmount;
         await thread.send(
-            '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。只有管理員和伺服器擁有者會看見你的回答。一共有 ' + queAmount + ' 個問題，請在問題下方輸入您的回答。\n' + 
-            'Please answer the question(s) asked by the administrators to help them review your server join application. Only the administrator and the server owner will see your answers. Please enter your answer below question.。\n' + 
-            'There are ' + queAmount + ' question(s) in total.'
+            '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
+            '只有管理員和伺服器擁有者會看見你的回答。' + 
+            '一共有 ' + queAmount + ' 個問題，請在問題下方輸入您的回答，並在 ' + guildData.verifyTimelimit + ' 分鐘前完成驗證。\n' + 
+            'Please answer the questions asked by the administrators to help them review your server membership application. ' + 
+            'Only administrators and server owners will see your answers. ' + 
+            'There are a total of ' + queAmount + ' questions, please enter your answer below the question and complete the verification before ' + 
+            guildData.verifyTimelimit + ' minutes.'
         );
         
         /**
