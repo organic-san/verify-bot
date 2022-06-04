@@ -126,7 +126,7 @@ module.exports = {
             if(id !== id) return collected.reply('請正確輸入問題代碼。');
             if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
             let removed = ql[id - 1];
-            ql = ql.splice(id - 1, 1);
+            ql.splice(id - 1, 1);
             if(ql.length <= 0) {
                 guildData.isWorking = false;
                 guildData.questionGenerateAmount = 0;
@@ -135,7 +135,7 @@ module.exports = {
                     `問題移除完成: \n` + 
                     `問題: ${removed.question}\n` + 
                     `回答: ${removed.answer.join('、')}\n` + 
-                    `同時因為問題數量不足，因此停止驗證系統運作。`
+                    `同時因為問題數量不足，因此關閉驗證系統運作。`
                 );
 
             } else if(ql.length < guildData.questionGenerateAmount) {
@@ -144,7 +144,7 @@ module.exports = {
                 collected.reply(
                     `問題移除完成: \n` + 
                     `問題: ${removed.question}\n` + 
-                    `回答: ${removed.answer.join('、')}\n`
+                    `回答: ${removed.answer.join('、')}\n` +
                     `同時將產生的問題數量調整為與現有問題數量相當: ${guildData.questionGenerateAmount} 個。`
                 );
             } else {
@@ -203,9 +203,9 @@ module.exports = {
             if(step[0] && step[1] && step[2] && step[3] && step[4]) {
                 guildData.isWorking = true;
                 fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-                msg.reply({content: `開啟系統運作。`});
+                msg.reply({content: `開啟驗證系統運作。`});
                 let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
-                backstage.send(`開啟系統運作。`);
+                backstage.send(`開啟驗證系統運作。`);
             } else {
                 let text = `無法開啟系統，因為尚未設定以下內容: ` + 
                     (step[0] ? '' : '驗證頻道、') + 
@@ -220,9 +220,25 @@ module.exports = {
             if(!guildData.isWorking) return msg.reply({content: `系統已經是關閉狀態。`});
             guildData.isWorking = false;
             fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
-            msg.reply({content: `關閉系統運作。`});
+            msg.reply({content: `關閉驗證系統運作。`});
             let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
-            backstage.send(`關閉系統運作。`);
+            backstage.send(`關閉驗證系統運作。`);
+
+        } else if(['allkick-open', 'ao'].includes(text[1])) {
+            if(guildData.allKick) return msg.reply({content: `系統已經是開啟狀態。`});
+            guildData.allKick = true;
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            msg.reply({content: `開啟全踢出系統運作。`});
+            let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
+            backstage.send(`開啟全踢出系統運作。`);
+
+        } else if(['allkick-close', 'ac'].includes(text[1])) {
+            if(!guildData.allKick) return msg.reply({content: `系統已經是關閉狀態。`});
+            guildData.allKick = false;
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            msg.reply({content: `關閉全踢出系統運作。`});
+            let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
+            backstage.send(`關閉全踢出系統運作。`);
 
         } else if(['show-all', 'sa'].includes(text[1])) {
             let vc = guildData.verifyChannel ? `<#${guildData.verifyChannel}> (${guildData.verifyChannel})` : '尚未設定。';
@@ -232,10 +248,13 @@ module.exports = {
                 .setColor(process.env.EMBEDCOLOR)
                 .setTitle(`**${msg.guild.name}** 目前的設定`)
                 //.addField('.setting welcome-message <message>\n.setting wm <message>', '設定歡迎訊息。')
+                .addField('驗證系統是否開啟', guildData.isWorking ? '開啟' : '關閉')
+                .addField('全踢出系統是否開啟', guildData.allKick ? '開啟' : '關閉')
                 .addField('驗證頻道(verify-channel)', vc)
                 .addField('後台頻道(backstage-channel)', bc)
                 .addField('驗證問題一覽', `已設定 ${guildData.questionList.length} 個驗證問題\n個別詳細請使用指令\`.setting show-question\`查詢。`)
                 .addField('驗證問題產生數量(question-amount)', `${guildData.questionGenerateAmount} 個`)
+                .addField('入群驗證逾時踢出時間(kick-timelimit)', `${(guildData.verifyTimelimit === 0 ? '不在逾時後踢出，逾時設為 60 分鐘' : guildData.verifyTimelimit + ' 分鐘')}`)
                 .addField('賦予身分組(endow-role)', role)
                 .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                 .setTimestamp()

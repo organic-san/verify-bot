@@ -178,9 +178,25 @@ client.on('guildMemberAdd', async member => {
      * @type {Discord.TextChannel}
      */
     let verifyChannel = await member.guild.channels.fetch(gData.verifyChannel);
+    let backstage = await member.guild.channels.fetch(gData.backstageChannel);
+
+    //全踢出
+    if(gData.allKick) {
+        if(!member.kickable) backstage.send({content: `錯誤：權限不足，無法踢出 ${member}。`});
+        else {
+            await member.send(
+                `非常抱歉，由於目前正在整理伺服器，因此暫時不開放加入 **${member.guild}**。預計於數日內重新開放加入伺服器。\n` + 
+                `Sorry, we are currently in the process of organizing the server, so we are temporarily closed to join **${member.guild}**. ` + 
+                `We expect to reopen the server in a few days.`
+            ).catch(() => {});
+            await member.kick().catch(() => {});
+            backstage.send({content: `自動踢出 ${member}。`});
+        }
+    }
+    //全踢出結束
+    
     if(!gData.isWorking) return;
     verifying.push(member.id);
-    let backstage = await member.guild.channels.fetch(gData.backstageChannel);
     backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
     let threadMsg = await verifyChannel.send(
         member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
@@ -303,7 +319,7 @@ client.on('guildMemberAdd', async member => {
                     '\n逾時，驗證失敗。\n' + 
                     'Timeout, verification failed.'
                 );
-                if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author}。`});
+                if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${member}。`});
                 await member.send(
                     `由於您未在時間限制內完成驗證，因此您被踢出 **${member.guild.name}**。\n` + 
                     `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`

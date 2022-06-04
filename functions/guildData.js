@@ -22,6 +22,8 @@ class GuildData {
         this.questionGenerateAmount = 0;
         this.isRandonQuestion = true;
         this.verifyTimelimit = 0;
+        
+        this.allKick = false;
 
         this.isWorking = false;
     }
@@ -44,6 +46,8 @@ class GuildData {
         this.questionGenerateAmount = obj.questionGenerateAmount ?? 0;
         this.isRandonQuestion = obj.isRandonQuestion ?? true;
         this.verifyTimelimit = obj.verifyTimelimit ?? 0;
+
+        this.allKick = obj.allKick ?? false;
 
         this.isWorking = obj.isWorking ?? false;
     }
