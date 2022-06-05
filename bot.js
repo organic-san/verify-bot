@@ -75,7 +75,7 @@ client.on('interactionCreate', async interaction => {
     if(data[0] !== 'verify') return;
     interaction.deferUpdate();
     let gData = guildData.get(interaction.guild.id);
-    let user = await interaction.guild.members.fetch(data[2]).catch(() => user = undefined); 
+    let user = await interaction.guild.members.fetch(data[2]).catch(() => {}); 
     /**
      * @type {Discord.TextChannel}
      */
@@ -84,8 +84,8 @@ client.on('interactionCreate', async interaction => {
     let thread = await verifyChannel.threads.fetch(data[3]);
     let threadMsg = await verifyChannel.messages.fetch(data[4]);
     if(!user) {
+        thread.delete().catch(() => {});
         interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`, embeds: [], components: []});
-        backstageChannel.send(`<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`);
         threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
         verifyChannel.send(
             `<@${data[2]}>\n` + 
@@ -325,7 +325,8 @@ client.on('guildMemberAdd', async member => {
 
     collector.on('end', async (c, r) => {
         if(r === 'time') {
-            if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
+            if(!verifying.findIndex((i => i === member.id)) >= 0) return;
+                verifying.splice(verifying.findIndex((i => i === member.id)), 1);
             thread.delete();
             if(gData.verifyTimelimit === 0) {
                 threadMsg.edit(
