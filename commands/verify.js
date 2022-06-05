@@ -35,7 +35,7 @@ module.exports = {
             msg.author.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
             'please join to the thread below to start the server join validation process.'
         );
-        let thread = await threadMsg.startThread({name: `驗證 - ${msg.author.id}`, autoArchiveDuration: 1440});
+        let thread = await threadMsg.startThread({name: `驗證 - ${msg.author.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
         let queAmount = guildData.questionGenerateAmount === 0 ? guildData.questionList.length : guildData.questionGenerateAmount;
         await thread.send(
             '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
@@ -71,10 +71,10 @@ module.exports = {
         let collector = thread.createMessageCollector({time: (guildData.verifyTimelimit === 0 ? 60 : guildData.verifyTimelimit) * 60 * 1000});
 
         collector.on('collect', async (cmsg) => {
-            if(cmsg.author.id !== msg.author.id) return;
+            //if(cmsg.deletable) cmsg.delete().catch(() => {});
+            if(cmsg.author.id !== msg.author.id) return; 
             if(answer.length > queAmount) return;
             answer.push(cmsg.content);
-            if(cmsg.deletable) cmsg.delete().catch(() => {});
             step++;
             if(step <= queAmount) {
                 thread.send(`${step}. ${queList[step - 1].question}`);

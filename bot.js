@@ -172,6 +172,15 @@ client.on('messageCreate', async msg =>{
     if(!msg.guild || !msg.member) return; //訊息內不存在guild元素 = 非群組消息(私聊)
     if(msg.webhookId) return;
 
+    if(msg.channel.isThread) {
+        if(msg.author.id !== client.user.id) {
+            if(msg.channel.name.startsWith('驗證'))
+                if(msg.deletable) msg.delete().catch(()=> {});
+        }
+    }
+
+    if(msg.channel.isThread) return;
+
     if(msg.content.startsWith('.')) {
         let commandName = msg.content.slice(1).split(/\s+/)[0];
         const command = client.commands.get(commandName);
@@ -223,7 +232,7 @@ client.on('guildMemberAdd', async member => {
         member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
         'please join to the thread below to start the server join validation process.'
     );
-    let thread = await threadMsg.startThread({name: `驗證 - ${member.id}`, autoArchiveDuration: 1440});
+    let thread = await threadMsg.startThread({name: `驗證 - ${member.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
     let queAmount = gData.questionGenerateAmount === 0 ? gData.questionList.length : gData.questionGenerateAmount;
     await thread.send(
         '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
@@ -259,9 +268,9 @@ client.on('guildMemberAdd', async member => {
     let collector = thread.createMessageCollector({time: (gData.verifyTimelimit === 0 ? 60 : gData.verifyTimelimit) * 60 * 1000});
 
     collector.on('collect', async (cmsg) => {
+        //if(cmsg.deletable) cmsg.delete().catch(() => {});
         if(cmsg.author.id !== member.id) return;
         answer.push(cmsg.content);
-        if(cmsg.deletable) cmsg.delete().catch(() => {});
         step++;
         if(step <= queAmount) {
             thread.send(`${step}. ${queList[step - 1].question}`);
@@ -321,6 +330,7 @@ client.on('guildMemberAdd', async member => {
                 thread.delete();
 
             }
+            collector.stop('end');
         }
     });
 
