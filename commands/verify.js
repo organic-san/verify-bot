@@ -14,6 +14,7 @@ module.exports = {
      */
     async execute(msg, client, guildData, verifying) {
         if(msg.channel.isThread()) return;
+        if(msg.author.bot) return;
         if(msg.channel.id !== guildData.verifyChannel) return msg.reply(
             '只能在驗證頻道輸入指令。\n' + 
             'You can only enter commands in the verification channel.'
