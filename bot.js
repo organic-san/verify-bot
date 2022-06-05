@@ -326,7 +326,7 @@ client.on('guildMemberAdd', async member => {
 
     collector.on('end', async (c, r) => {
         if(r === 'time') {
-            if(!verifying.findIndex((i => i === member.id)) >= 0) return;
+            if(verifying.findIndex((i => i === member.id)) === -1) return;
                 verifying.splice(verifying.findIndex((i => i === member.id)), 1);
             thread.delete();
             if(gData.verifyTimelimit === 0) {

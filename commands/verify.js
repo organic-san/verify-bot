@@ -138,7 +138,7 @@ module.exports = {
 
         collector.on('end', async (c, r) => {
             if(r === 'time') {
-                if(!verifying.findIndex((i => i === msg.author.id)) >= 0) return;
+                if(verifying.findIndex((i => i === msg.author.id)) === -1) return;
                 verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
                 thread.delete();
                 if(guildData.verifyTimelimit === 0) {
