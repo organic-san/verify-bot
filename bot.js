@@ -75,7 +75,7 @@ client.on('interactionCreate', async interaction => {
     if(data[0] !== 'verify') return;
     interaction.deferUpdate();
     let gData = guildData.get(interaction.guild.id);
-    let user = await interaction.guild.members.fetch(data[2]); 
+    let user = await interaction.guild.members.fetch(data[2]).catch(() => user = undefined); 
     /**
      * @type {Discord.TextChannel}
      */
@@ -122,13 +122,33 @@ client.on('interactionCreate', async interaction => {
             `<@${data[2]}>\n` + 
             '驗證失敗。Verification failed.'
         );
-        verifyChannel.send(
-            `<@${data[2]}>\n` + 
-            `驗證失敗，由管理員駁回。請輸入\`.verify\`重新驗證。\n` + 
-            `Verification failed and was dismissed by the administrator. Please enter \`.verify\` to re-verify.`
-        )
+        if(gData.reverifyTimelimit === 0) {
+            verifyChannel.send(
+                `<@${data[2]}>\n` + 
+                `驗證失敗，由管理員駁回。請輸入\`.verify\`重新驗證。\n` + 
+                `Verification failed and was dismissed by the administrator. Please enter \`.verify\` to re-verify.`
+            )
+        } else {
+            verifyChannel.send(
+                `<@${data[2]}>\n` + 
+                `驗證失敗，由管理員駁回。請在 ${gData.reverifyTimelimit} 分鐘內輸入\`.verify\`重新驗證。\n` + 
+                `Verification failed and was dismissed by the administrator. Please enter \`.verify\` in ${gData.reverifyTimelimit} minute to re-verify.`
+            )
+        }
         interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 駁回驗證。`, embeds: [], components: []});
-
+        if(gData.reverifyTimelimit <= 0) return;
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        wait(gData.reverifyTimelimit * 60 * 1000).then(async () => {
+            if(!user.manageable) return;
+            if(user.roles.cache.has(gData.role)) return;
+            if(verifying.findIndex((i => i === user.id)) >= 0) return;
+            await user.user.send(
+                `您因為太久沒有重新驗證，因此被踢出 **${interaction.guild.name}**。\n` + 
+                `You have been kicked out of **${interaction.guild.name}** because you have not re-validated for too long.`
+            ).catch(() => {});
+            await user.kick().catch(() => {});
+            backstageChannel.send(`${user} (${user.id}) 因為太久沒有重新驗證而被踢出。`);
+        })
 
     } else if(data[1] === 'kick') {
         if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`});
@@ -255,7 +275,7 @@ client.on('guildMemberAdd', async member => {
                 let embed = new Discord.MessageEmbed()
                 .setColor(process.env.EMBEDCOLOR)
                 .setTitle('驗證問題回答結果')
-                .setAuthor({name: `${member.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
+                .setAuthor({name: `${member.user.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
                 .setTimestamp()
                 .setFooter({text: member.id});
 
@@ -313,6 +333,7 @@ client.on('guildMemberAdd', async member => {
                     '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
                     'Timeout, verification failed. Please type `.verify` to restart the verification again.'
                 );
+                backstage.send(`${member} (${member.id}) 驗證因逾時而取消。`);
             } else {
                 threadMsg.edit(
                     member.toString() + 
@@ -325,7 +346,12 @@ client.on('guildMemberAdd', async member => {
                     `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`
                 ).catch(() => {});
                 await member.kick().catch(() => {});
+                backstage.send(`${member} (${member.id}) 因為驗證逾時而被踢出。`);
             }
         }
     })
+})
+
+client.on('guildMemberRemove', member => {
+    if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
 })

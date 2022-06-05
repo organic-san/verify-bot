@@ -35,6 +35,10 @@ module.exports = {
                 '.setting kick-timelimit <time>\n.setting kt <time>', 
                 '設定入群驗證逾時踢出時間，時間單位為分。入群者不在指定時間內完成驗證將會被踢出，設為0則不會踢出。'
             )
+            .addField(
+                '.setting reverify-kick-timelimit <time>\n.setting rkt <time>', 
+                '設定重新驗證逾時踢出時間，時間單位為分。在驗證被駁回後指定時間內不驗證將會被踢出，設為0則不會被踢出。'
+            )
             .addField('.setting allkick-open \n.setting ao', '開啟全踢出模式。')
             .addField('.setting allkick-close\n.setting ac', '關閉全踢出模式。')
             .addField('.setting open', 

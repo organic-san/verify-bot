@@ -192,6 +192,17 @@ module.exports = {
                 else
                     msg.reply({content: `入群驗證逾時踢出時間設定完成: 操作逾時後不踢出(逾時設為60分鐘)。`});
 
+        }  else if(['rkt', 'reverify-kick-timelimit'].includes(text[1])) {
+            let timelimit = parseInt(text[2]);
+            if(timelimit < 0 || timelimit !== timelimit) 
+                return msg.reply('請設定正確的時間長度(t>0)。');
+                guildData.reverifyTimelimit = timelimit;
+                fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+                if(timelimit > 0)
+                    msg.reply({content: `重新驗證逾時踢出時間設定完成: ${guildData.reverifyTimelimit} 分鐘。`});
+                else
+                    msg.reply({content: `重新驗證逾時踢出時間設定完成: 不逾時。`});
+
         } else if(['open'].includes(text[1])) {
             if(guildData.isWorking) return msg.reply({content: `系統已經是開啟狀態。`});
             let step = [false, false, false, true, false]; //驗證頻道，後台頻道，問題數量，問題產生數量，賦予身分組
@@ -255,6 +266,7 @@ module.exports = {
                 .addField('驗證問題一覽', `已設定 ${guildData.questionList.length} 個驗證問題\n個別詳細請使用指令\`.setting show-question\`查詢。`)
                 .addField('驗證問題產生數量(question-amount)', `${guildData.questionGenerateAmount} 個`)
                 .addField('入群驗證逾時踢出時間(kick-timelimit)', `${(guildData.verifyTimelimit === 0 ? '不在逾時後踢出，逾時設為 60 分鐘' : guildData.verifyTimelimit + ' 分鐘')}`)
+                .addField('重新驗證逾時踢出時間(reverify-kick-timelimit)', `${(guildData.reverifyTimelimit === 0 ? '不會逾時' : guildData.reverifyTimelimit + ' 分鐘')}`)
                 .addField('賦予身分組(endow-role)', role)
                 .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                 .setTimestamp()
