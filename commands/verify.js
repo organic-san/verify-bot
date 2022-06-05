@@ -138,9 +138,13 @@ module.exports = {
 
         collector.on('end', async (c, r) => {
             if(r === 'time') {
-                if(verifying.findIndex((i => i === msg.author.id)) === -1) return;
-                verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
                 thread.delete();
+                if(verifying.findIndex((i => i === msg.author.id)) === -1) return threadMsg.edit(
+                    msg.author.toString() + 
+                    '\n驗證取消。\n' + 
+                    'Verification cancelled.'
+                );
+                verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
                 if(guildData.verifyTimelimit === 0) {
                     threadMsg.edit(
                         msg.author.toString() + 
