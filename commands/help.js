@@ -39,12 +39,13 @@ module.exports = {
                 '.setting reverify-kick-timelimit <time>\n.setting rkt <time>', 
                 '設定重新驗證逾時踢出時間，時間單位為分。在驗證被駁回後指定時間內不驗證將會被踢出，設為0則不會踢出。'
             )
-            .addField('.setting allkick-open \n.setting ao', '開啟全踢出模式。')
+            .addField('.setting allkick-open\n.setting ao', '開啟全踢出模式。')
             .addField('.setting allkick-close\n.setting ac', '關閉全踢出模式。')
             .addField('.setting open', 
                 '開啟系統。需要先行設定驗證頻道、後台頻道、至少一個驗證問題及賦予身分組才能開啟。' +
                 '設為開啟時，加入伺服器或輸入指令\`.verify\`會開啟驗證程序。')
             .addField('.setting close', '關閉系統。')
+            .addField('.setting show-all\n.setting sa', '顯示所有設定。')
             .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
             .setTimestamp()
         msg.reply({
