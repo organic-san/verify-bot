@@ -172,14 +172,14 @@ client.on('messageCreate', async msg =>{
     if(!msg.guild || !msg.member) return; //訊息內不存在guild元素 = 非群組消息(私聊)
     if(msg.webhookId) return;
 
-    if(msg.channel.isThread) {
+    if(msg.channel.isThread()) {
         if(msg.author.id !== client.user.id) {
             if(msg.channel.name.startsWith('驗證'))
                 if(msg.deletable) msg.delete().catch(()=> {});
         }
     }
 
-    if(msg.channel.isThread) return;
+    if(msg.channel.isThread()) return;
 
     if(msg.content.startsWith('.')) {
         let commandName = msg.content.slice(1).split(/\s+/)[0];
