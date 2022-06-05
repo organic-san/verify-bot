@@ -201,7 +201,7 @@ client.on('guildMemberAdd', async member => {
 
     //全踢出
     if(gData.allKick) {
-        console.log('all-kicking, guild: ' + msg.guild.name);
+        console.log('all-kicking, guild: ' + member.guild.name);
         if(!member.kickable) backstage.send({content: `錯誤：權限不足，無法踢出 ${member}。`});
         else {
             await member.send(
@@ -218,7 +218,7 @@ client.on('guildMemberAdd', async member => {
     if(!gData.isWorking) return;
     verifying.push(member.id);
     backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
-    console.log('auto-verifying, guild: ' + msg.guild.name);
+    console.log('auto-verifying, guild: ' + member.guild.name);
     let threadMsg = await verifyChannel.send(
         member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
         'please join to the thread below to start the server join validation process.'
