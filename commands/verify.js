@@ -151,7 +151,7 @@ module.exports = {
                         '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
                         'Timeout, verification failed. Please type `.verify` to restart the verification again.'
                     );
-                    backstage.send(`${member} (${member.id}) 驗證因逾時而取消。`);
+                    backstage.send(`${mag.author} (${msg.author.id}) 驗證因逾時而取消。`);
                 } else {
                     threadMsg.edit(
                         msg.author.toString() + 
@@ -164,7 +164,7 @@ module.exports = {
                         `You have been kicked from **${msg.guild.name}** because you did not complete the verification within the time limit.`
                     ).catch(() => {});
                     await msg.member.kick().catch(() => {});
-                    backstage.send(`${member} (${member.id}) 因為驗證逾時而被踢出。`);
+                    backstage.send(`${msg.author} (${msg.author.id}) 因為驗證逾時而被踢出。`);
                 }
             }
             
