@@ -181,7 +181,7 @@ client.on('messageCreate', async msg =>{
         }
     }
 
-    if(msg.content === 't') console.log(verifying);
+    //if(msg.content === 't') console.log(verifying);
 
     if(msg.channel.isThread()) return;
 
@@ -225,10 +225,15 @@ client.on('guildMemberAdd', async member => {
             await member.kick().catch(() => {});
             backstage.send({content: `自動踢出 ${member}。`});
         }
+        return;
     }
     //全踢出結束
     
     if(!gData.isWorking) return;
+    if(verifying.includes(member.id)) return verifyChannel.send(
+        member.toString() + '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
+        'You have started the verification process, please go to to your verification thread to continue the verification process.'
+    );
     verifying.push(member.id);
     backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
     console.log('auto-verifying, guild: ' + member.guild.name);
@@ -375,8 +380,4 @@ client.on('guildMemberAdd', async member => {
             }
         }
     })
-})
-
-client.on('guildMemberRemove', member => {
-    if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
 })
