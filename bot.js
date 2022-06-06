@@ -73,6 +73,7 @@ client.on('interactionCreate', async interaction => {
     let data = interaction.customId.split(';');
     if(data[0] !== 'verify') return;
     interaction.deferUpdate();
+    if(!interaction.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
     let gData = guildData.get(interaction.guild.id);
     let user = await interaction.guild.members.fetch(data[2]).catch(() => {}); 
     /**
@@ -84,6 +85,7 @@ client.on('interactionCreate', async interaction => {
     let threadMsg = await verifyChannel.messages.fetch(data[4]);
     if(!user) {
         thread.delete().catch(() => {});
+        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`, embeds: [], components: []});
         threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
         verifyChannel.send(
@@ -94,8 +96,8 @@ client.on('interactionCreate', async interaction => {
         return;
     }
     if(data[1] === 'pass') {
-        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         thread.delete().catch(() => {});
+        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         let err = false;
         await user.roles.add(gData.role).catch(() => err = true);
         if(err) {
@@ -115,8 +117,8 @@ client.on('interactionCreate', async interaction => {
         }
 
     } else if(data[1] === 'fail') {
-        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         thread.delete().catch(() => {});
+        if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         threadMsg.edit(
             `<@${data[2]}>\n` + 
             '驗證失敗。Verification failed.'
@@ -178,6 +180,8 @@ client.on('messageCreate', async msg =>{
                 if(msg.deletable) msg.delete().catch(()=> {});
         }
     }
+
+    if(msg.content === 't') console.log(verifying);
 
     if(msg.channel.isThread()) return;
 
@@ -309,7 +313,13 @@ client.on('guildMemberAdd', async member => {
 
                 backstage.send({embeds: [embed], components: [button]});
             } else {
-                if(verifying.findIndex((i => i === member.id)) >= 0) verifying.splice(verifying.findIndex((i => i === member.id)), 1);
+                thread.delete();
+                if(verifying.findIndex((i => i === member.id)) === -1) return threadMsg.edit(
+                    member.toString() + 
+                    '\n驗證取消。\n' + 
+                    'Verification cancelled.'
+                );
+                verifying.splice(verifying.findIndex((i => i === member.id)), 1);
                 let err = false;
                 await member.roles.add(gData.role).catch(() => err = true);
                 if(err) {
@@ -327,7 +337,6 @@ client.on('guildMemberAdd', async member => {
                     );
                     backstage.send(`${member} (${member.id}) 驗證自動通過。`);
                 }
-                thread.delete();
 
             }
             collector.stop('end');
@@ -342,7 +351,7 @@ client.on('guildMemberAdd', async member => {
                 '驗證取消。\n' + 
                 'Verification cancelled.'
             );;
-                verifying.splice(verifying.findIndex((i => i === member.id)), 1);
+            verifying.splice(verifying.findIndex((i => i === member.id)), 1);
             if(gData.verifyTimelimit === 0) {
                 threadMsg.edit(
                     member.toString() + 

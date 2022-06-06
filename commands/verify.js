@@ -112,8 +112,16 @@ module.exports = {
 
                     backstage.send({embeds: [embed], components: [button]});
                 } else {
-                    if(verifying.findIndex((i => i === msg.author.id)) >= 0) verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
                     thread.delete();
+                    if(verifying.findIndex((i => i === msg.author.id)) === -1) {
+                        threadMsg.edit(
+                            msg.author.toString() + 
+                            '\n驗證取消。\n' + 
+                            'Verification cancelled.'
+                        );
+                        return collector.stop('end');
+                    }
+                    verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
                     let err = false;
                     await msg.member.roles.add(guildData.role).catch(() => err = true);
                     if(err) {
