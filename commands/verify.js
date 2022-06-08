@@ -90,7 +90,7 @@ module.exports = {
                     .setTitle('驗證問題回答結果')
                     .setAuthor({name: `${msg.author.tag}`, iconURL: msg.author.displayAvatarURL({dynamic: true})})
                     .setTimestamp()
-                    .setFooter({text: msg.author.id});
+                    .setFooter({text: 'user Id: ' +  msg.author.id});
 
                     answer.forEach((ans, ind) => {
                         embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}`);

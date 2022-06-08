@@ -296,7 +296,7 @@ client.on('guildMemberAdd', async member => {
                 .setTitle('驗證問題回答結果')
                 .setAuthor({name: `${member.user.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
                 .setTimestamp()
-                .setFooter({text: member.id});
+                .setFooter({text: 'user Id: ' +  member.id});
 
                 answer.forEach((ans, ind) => {
                     embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}`);
@@ -353,9 +353,9 @@ client.on('guildMemberAdd', async member => {
             thread.delete();
             if(verifying.findIndex((i => i === member.id)) === -1) return threadMsg.edit(
                 member.toString() + 
-                '驗證取消。\n' + 
+                '\n驗證取消。\n' + 
                 'Verification cancelled.'
-            );;
+            );
             verifying.splice(verifying.findIndex((i => i === member.id)), 1);
             if(gData.verifyTimelimit === 0) {
                 threadMsg.edit(
