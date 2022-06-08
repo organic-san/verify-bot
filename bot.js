@@ -190,7 +190,9 @@ client.on('messageCreate', async msg =>{
         const command = client.commands.get(commandName);
 	    if (!command) return;
         if(command.subCmd) commandName += ('/' + msg.content.slice(1).split(/\s+/)[1]);
-        console.log('isMsgCommand: ' + commandName + ', guild: ' + msg.guild.name);
+        let now = new Date(Date.now());
+        let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        console.log(timeNow + ' isMsgCommand: ' + commandName + ', guild: ' + msg.guild.name);
         try{
             if(command.tag === 'message') await command.execute(msg, client);
             if(command.tag === 'guildData') await command.execute(msg, client, guildData.get(msg.guild.id));
@@ -214,7 +216,9 @@ client.on('guildMemberAdd', async member => {
 
     //全踢出
     if(gData.allKick) {
-        console.log('all-kicking, guild: ' + member.guild.name);
+        let now = new Date(Date.now());
+        let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        console.log(timeNow + ' all-kicking, guild: ' + member.guild.name);
         if(!member.kickable) backstage.send({content: `錯誤：權限不足，無法踢出 ${member}。`});
         else {
             await member.send(
@@ -236,7 +240,9 @@ client.on('guildMemberAdd', async member => {
     );
     verifying.push(member.id);
     backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
-    console.log('auto-verifying, guild: ' + member.guild.name);
+    let now = new Date(Date.now());
+    let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    console.log(timeNow + ' auto-verifying, guild: ' + member.guild.name);
     let threadMsg = await verifyChannel.send(
         member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
         'please join to the thread below to start the server join validation process.'
