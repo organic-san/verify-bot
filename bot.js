@@ -179,6 +179,15 @@ client.on('messageCreate', async msg =>{
             if(msg.channel.name.startsWith('驗證'))
                 if(msg.deletable) msg.delete().catch(()=> {});
         }
+    } else {
+        let gd = guildData.get(msg.guild.id);
+        if(msg.author.id !== client.user.id) {
+            if(gd.isWorking) {
+                if(gd.verifyChannel === msg.channel.id) {
+                    if(msg.deletable) msg.delete().catch(()=> {});
+                }
+            }
+        }
     }
 
     //if(msg.content === 't') console.log(verifying);
@@ -198,7 +207,7 @@ client.on('messageCreate', async msg =>{
             if(command.tag === 'guildData') await command.execute(msg, client, guildData.get(msg.guild.id));
             if(command.tag === 'guildDataverifing') await command.execute(msg, client, guildData.get(msg.guild.id), verifying);
         }catch(err) {
-            console.log(err);msg.reply('發生意外錯誤，停止本次操作');
+            console.log(err);msg.channel.send(msg.author.toString() + ' 發生意外錯誤，停止本次操作，請聯繫管理員。');
         }
     }
 

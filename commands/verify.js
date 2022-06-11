@@ -15,23 +15,27 @@ module.exports = {
     async execute(msg, client, guildData, verifying) {
         if(msg.channel.isThread()) return;
         if(msg.author.bot) return;
-        if(msg.channel.id !== guildData.verifyChannel) return msg.reply(
-            '只能在驗證頻道輸入指令。\n' + 
+        if(msg.channel.id !== guildData.verifyChannel) return msg.channel.send(
+            msg.author.toString() + 
+            '\n只能在驗證頻道輸入指令。\n' + 
             'You can only enter commands in the verification channel.'
         );
-        if(msg.member.roles.cache.has(guildData.role)) return msg.reply(
-            '您已經通過驗證。\n' + 
+        if(msg.member.roles.cache.has(guildData.role)) return msg.channel.send(
+            msg.author.toString() + 
+            '\n您已經通過驗證。\n' + 
             'You have been verified.'
         );
-        if(verifying.includes(msg.author.id)) return msg.reply(
-            '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
+        if(verifying.includes(msg.author.id)) return msg.channel.send(
+            msg.author.toString() + 
+            '\n您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
             'You have started the verification process, please go to to your verification thread to continue the verification process.'
         );
-        if(!guildData.isWorking) return msg.reply('現在系統並未運作，請聯繫管理員。\nThe system is not working now, please contact the administrator.');
+        if(!guildData.isWorking) return msg.channel.send(msg.author.toString() + 
+        '\n現在系統並未運作，請聯繫管理員。\nThe system is not working now, please contact the administrator.');
         verifying.push(msg.author.id);
         let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
         backstage.send(`${msg.author} (${msg.author.id}) 手動開始驗證程序。`);
-        let threadMsg = await msg.reply(
+        let threadMsg = await msg.channel.send(
             msg.author.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
             'please join to the thread below to start the server join validation process.'
         );
