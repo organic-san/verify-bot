@@ -216,123 +216,157 @@ client.on('messageCreate', async msg =>{
 client.on('guildMemberAdd', async member => {
     if(!isready) return;
     if(member.user.bot) return;
+
     let gData = guildData.get(member.guild.id);
     /**
      * @type {Discord.TextChannel}
      */
     let verifyChannel = await member.guild.channels.fetch(gData.verifyChannel);
     let backstage = await member.guild.channels.fetch(gData.backstageChannel);
+    try{
 
-    //全踢出
-    if(gData.allKick) {
+        //全踢出
+        if(gData.allKick) {
+            let now = new Date(Date.now());
+            let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            console.log(timeNow + ' all-kicking, guild: ' + member.guild.name);
+            if(!member.kickable) backstage.send({content: `錯誤：權限不足，無法踢出 ${member}。`});
+            else {
+                await member.send(
+                    `非常抱歉，由於目前正在整理伺服器，因此暫時不開放加入 **${member.guild}**。預計於數日內重新開放加入伺服器。\n` + 
+                    `Sorry, we are currently in the process of organizing the server, so we are temporarily closed to join **${member.guild}**. ` + 
+                    `We expect to reopen the server in a few days.`
+                ).catch(() => {});
+                await member.kick().catch(() => {});
+                backstage.send({content: `自動踢出 ${member}。`});
+            }
+            return;
+        }
+        //全踢出結束
+        
+        if(!gData.isWorking) return;
+        if(verifying.includes(member.id)) return verifyChannel.send(
+            member.toString() + '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
+            'You have started the verification process, please go to to your verification thread to continue the verification process.'
+        );
+        verifying.push(member.id);
+        backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
         let now = new Date(Date.now());
         let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        console.log(timeNow + ' all-kicking, guild: ' + member.guild.name);
-        if(!member.kickable) backstage.send({content: `錯誤：權限不足，無法踢出 ${member}。`});
-        else {
-            await member.send(
-                `非常抱歉，由於目前正在整理伺服器，因此暫時不開放加入 **${member.guild}**。預計於數日內重新開放加入伺服器。\n` + 
-                `Sorry, we are currently in the process of organizing the server, so we are temporarily closed to join **${member.guild}**. ` + 
-                `We expect to reopen the server in a few days.`
-            ).catch(() => {});
-            await member.kick().catch(() => {});
-            backstage.send({content: `自動踢出 ${member}。`});
-        }
-        return;
-    }
-    //全踢出結束
-    
-    if(!gData.isWorking) return;
-    if(verifying.includes(member.id)) return verifyChannel.send(
-        member.toString() + '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
-        'You have started the verification process, please go to to your verification thread to continue the verification process.'
-    );
-    verifying.push(member.id);
-    backstage.send(`${member} (${member.id}) 自動開始驗證程序。`);
-    let now = new Date(Date.now());
-    let timeNow = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    console.log(timeNow + ' auto-verifying, guild: ' + member.guild.name);
-    let threadMsg = await verifyChannel.send(
-        member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
-        'please join to the thread below to start the server join validation process.'
-    );
-    let thread = await threadMsg.startThread({name: `驗證 - ${member.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
-    let queAmount = gData.questionGenerateAmount === 0 ? gData.questionList.length : gData.questionGenerateAmount;
-    await thread.send(
-        '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
-        '只有管理員和伺服器擁有者會看見你的回答。' + 
-        '一共有 ' + queAmount + ' 個問題，請在問題下方輸入您的回答，並在 ' + gData.verifyTimelimit + ' 分鐘前完成驗證。\n' + 
-        'Please answer the questions asked by the administrators to help them review your server membership application. ' + 
-        'Only administrators and server owners will see your answers. ' + 
-        'There are a total of ' + queAmount + ' questions, please enter your answer below the question and complete the verification before ' + 
-        gData.verifyTimelimit + ' minutes.'
-    );
-    
-    /**
-     * @type {Array<{question: string, answer: string[]}>}
-     */
-    let queList = [];
-    if(gData.questionGenerateAmount !== 0) {
-        let perList = [];
-        gData.questionList.forEach(q => perList.push(q));
-        for(let i = 0; i < gData.questionGenerateAmount; i ++) {
-            let random = Math.floor(Math.random() * perList.length);
-            queList[i] = perList[random];
-            perList.splice(random, 1);
-        }
-    } else {
-        gData.questionList.forEach(q => queList.push(q));
-    }
-
-    let step = 1;
-    let answer = [];
-
-    await thread.send(`${step}. ${queList[0].question}`);
-
-    let collector = thread.createMessageCollector({time: (gData.verifyTimelimit === 0 ? 60 : gData.verifyTimelimit) * 60 * 1000});
-
-    collector.on('collect', async (cmsg) => {
-        //if(cmsg.deletable) cmsg.delete().catch(() => {});
-        if(cmsg.author.id !== member.id) return;
-        answer.push(cmsg.content);
-        step++;
-        if(step <= queAmount) {
-            thread.send(`${step}. ${queList[step - 1].question}`);
+        console.log(timeNow + ' auto-verifying, guild: ' + member.guild.name);
+        let threadMsg = await verifyChannel.send(
+            member.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
+            'please join to the thread below to start the server join validation process.'
+        );
+        let thread = await threadMsg.startThread({name: `驗證 - ${member.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
+        let queAmount = gData.questionGenerateAmount === 0 ? gData.questionList.length : gData.questionGenerateAmount;
+        await thread.send(
+            '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
+            '只有管理員和伺服器擁有者會看見你的回答。' + 
+            '一共有 ' + queAmount + ' 個問題，請在問題下方輸入您的回答，並在 ' + gData.verifyTimelimit + ' 分鐘前完成驗證。\n' + 
+            'Please answer the questions asked by the administrators to help them review your server membership application. ' + 
+            'Only administrators and server owners will see your answers. ' + 
+            'There are a total of ' + queAmount + ' questions, please enter your answer below the question and complete the verification before ' + 
+            gData.verifyTimelimit + ' minutes.'
+        );
+        
+        /**
+         * @type {Array<{question: string, answer: string[]}>}
+         */
+        let queList = [];
+        if(gData.questionGenerateAmount !== 0) {
+            let perList = [];
+            gData.questionList.forEach(q => perList.push(q));
+            for(let i = 0; i < gData.questionGenerateAmount; i ++) {
+                let random = Math.floor(Math.random() * perList.length);
+                queList[i] = perList[random];
+                perList.splice(random, 1);
+            }
         } else {
-            if(step > queAmount + 1) return;
-            let inspection = 0;
-            answer.forEach((ans, ind) => {
-                if(!queList[ind].answer.includes(ans)) inspection++;
-            })
-            if(inspection > 0) {
-                thread.send('已確認您的回答，請等待管理員審核。\nYour answer has been confirmed, please wait for the administrator to review it.');
-                let embed = new Discord.MessageEmbed()
-                .setColor(process.env.EMBEDCOLOR)
-                .setTitle('驗證問題回答結果')
-                .setAuthor({name: `${member.user.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
-                .setTimestamp()
-                .setFooter({text: 'user Id: ' +  member.id});
+            gData.questionList.forEach(q => queList.push(q));
+        }
 
-                answer.forEach((ans, ind) => {
-                    embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}`);
-                })
-                let button = new Discord.MessageActionRow().addComponents([
-                    new Discord.MessageButton()
-                        .setLabel('通過')
-                        .setCustomId(`verify;pass;${member.id};${thread.id};${threadMsg.id}`)
-                        .setStyle('SUCCESS'),
-                    new Discord.MessageButton()
-                        .setLabel('駁回')
-                        .setCustomId(`verify;fail;${member.id};${thread.id};${threadMsg.id}`)
-                        .setStyle('PRIMARY'),
-                    new Discord.MessageButton()
-                        .setLabel('踢出')
-                        .setCustomId(`verify;kick;${member.id};${thread.id};${threadMsg.id}`)
-                        .setStyle('DANGER'),
-                ])
+        let step = 1;
+        let answer = [];
 
-                backstage.send({embeds: [embed], components: [button]});
+        await thread.send(`${step}. ${queList[0].question}`);
+
+        let collector = thread.createMessageCollector({time: (gData.verifyTimelimit === 0 ? 60 : gData.verifyTimelimit) * 60 * 1000});
+
+        collector.on('collect', async (cmsg) => {
+            //if(cmsg.deletable) cmsg.delete().catch(() => {});
+            if(cmsg.author.id !== member.id) return;
+            answer.push(cmsg.content);
+            step++;
+            if(step <= queAmount) {
+                thread.send(`${step}. ${queList[step - 1].question}`);
             } else {
+                if(step > queAmount + 1) return;
+                let inspection = 0;
+                answer.forEach((ans, ind) => {
+                    if(!queList[ind].answer.includes(ans)) inspection++;
+                })
+                if(inspection > 0) {
+                    thread.send('已確認您的回答，請等待管理員審核。\nYour answer has been confirmed, please wait for the administrator to review it.');
+                    let embed = new Discord.MessageEmbed()
+                    .setColor(process.env.EMBEDCOLOR)
+                    .setTitle('驗證問題回答結果')
+                    .setAuthor({name: `${member.user.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
+                    .setTimestamp()
+                    .setFooter({text: 'user Id: ' +  member.id});
+
+                    answer.forEach((ans, ind) => {
+                        embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}`);
+                    })
+                    let button = new Discord.MessageActionRow().addComponents([
+                        new Discord.MessageButton()
+                            .setLabel('通過')
+                            .setCustomId(`verify;pass;${member.id};${thread.id};${threadMsg.id}`)
+                            .setStyle('SUCCESS'),
+                        new Discord.MessageButton()
+                            .setLabel('駁回')
+                            .setCustomId(`verify;fail;${member.id};${thread.id};${threadMsg.id}`)
+                            .setStyle('PRIMARY'),
+                        new Discord.MessageButton()
+                            .setLabel('踢出')
+                            .setCustomId(`verify;kick;${member.id};${thread.id};${threadMsg.id}`)
+                            .setStyle('DANGER'),
+                    ])
+
+                    backstage.send({embeds: [embed], components: [button]});
+                } else {
+                    thread.delete();
+                    if(verifying.findIndex((i => i === member.id)) === -1) return threadMsg.edit(
+                        member.toString() + 
+                        '\n驗證取消。\n' + 
+                        'Verification cancelled.'
+                    );
+                    verifying.splice(verifying.findIndex((i => i === member.id)), 1);
+                    let err = false;
+                    await member.roles.add(gData.role).catch(() => err = true);
+                    if(err) {
+                        threadMsg.edit(
+                            member.toString() +
+                            '\n發生錯誤：權限不足，請聯絡管理員。\n' + 
+                            'Error: Permissions are not enough, please contact the administrator.'
+                        );
+                        backstage.send(`${member} (${member.id}) 驗證過程發生錯誤：身分組權限不足。`);
+                    } else {
+                        threadMsg.edit(
+                            member.toString() +
+                            '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
+                            'Congratulations, you have been verified and can officially join the server.'
+                        );
+                        backstage.send(`${member} (${member.id}) 驗證自動通過。`);
+                    }
+
+                }
+                collector.stop('end');
+            }
+        });
+
+        collector.on('end', async (c, r) => {
+            if(r === 'time') {
                 thread.delete();
                 if(verifying.findIndex((i => i === member.id)) === -1) return threadMsg.edit(
                     member.toString() + 
@@ -340,59 +374,30 @@ client.on('guildMemberAdd', async member => {
                     'Verification cancelled.'
                 );
                 verifying.splice(verifying.findIndex((i => i === member.id)), 1);
-                let err = false;
-                await member.roles.add(gData.role).catch(() => err = true);
-                if(err) {
+                if(gData.verifyTimelimit === 0) {
                     threadMsg.edit(
-                        member.toString() +
-                        '\n發生錯誤：權限不足，請聯絡管理員。\n' + 
-                        'Error: Permissions are not enough, please contact the administrator.'
+                        member.toString() + 
+                        '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
+                        'Timeout, verification failed. Please type `.verify` to restart the verification again.'
                     );
-                    backstage.send(`${member} (${member.id}) 驗證過程發生錯誤：身分組權限不足。`);
+                    backstage.send(`${member} (${member.id}) 驗證因逾時而取消。`);
                 } else {
                     threadMsg.edit(
-                        member.toString() +
-                        '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
-                        'Congratulations, you have been verified and can officially join the server.'
+                        member.toString() + 
+                        '\n逾時，驗證失敗。\n' + 
+                        'Timeout, verification failed.'
                     );
-                    backstage.send(`${member} (${member.id}) 驗證自動通過。`);
+                    if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${member}。`});
+                    await member.send(
+                        `由於您未在時間限制內完成驗證，因此您被踢出 **${member.guild.name}**。\n` + 
+                        `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`
+                    ).catch(() => {});
+                    await member.kick().catch(() => {});
+                    backstage.send(`${member} (${member.id}) 因為驗證逾時而被踢出。`);
                 }
-
             }
-            collector.stop('end');
-        }
-    });
-
-    collector.on('end', async (c, r) => {
-        if(r === 'time') {
-            thread.delete();
-            if(verifying.findIndex((i => i === member.id)) === -1) return threadMsg.edit(
-                member.toString() + 
-                '\n驗證取消。\n' + 
-                'Verification cancelled.'
-            );
-            verifying.splice(verifying.findIndex((i => i === member.id)), 1);
-            if(gData.verifyTimelimit === 0) {
-                threadMsg.edit(
-                    member.toString() + 
-                    '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
-                    'Timeout, verification failed. Please type `.verify` to restart the verification again.'
-                );
-                backstage.send(`${member} (${member.id}) 驗證因逾時而取消。`);
-            } else {
-                threadMsg.edit(
-                    member.toString() + 
-                    '\n逾時，驗證失敗。\n' + 
-                    'Timeout, verification failed.'
-                );
-                if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${member}。`});
-                await member.send(
-                    `由於您未在時間限制內完成驗證，因此您被踢出 **${member.guild.name}**。\n` + 
-                    `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`
-                ).catch(() => {});
-                await member.kick().catch(() => {});
-                backstage.send(`${member} (${member.id}) 因為驗證逾時而被踢出。`);
-            }
-        }
-    })
+        })
+    } catch (err) {
+        console.log(err);verifyChannel.send(member.toString() + ' 發生意外錯誤，停止本次操作，請聯繫管理員。');
+    }
 })
