@@ -86,7 +86,7 @@ client.on('interactionCreate', async interaction => {
     if(!user) {
         thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
-        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`, embeds: [], components: []});
+        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`,/* embeds: [],*/ components: []});
         threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
         verifyChannel.send(
             `<@${data[2]}>\n` + 
@@ -106,14 +106,14 @@ client.on('interactionCreate', async interaction => {
                 '發生錯誤：權限不足，請聯絡管理員。\n' + 
                 'Error: Permissions are not enough, please contact the administrator.'
             );
-            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 驗證過程發生錯誤：身分組權限不足。`, embeds: [], components: []});
+            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 驗證過程發生錯誤：身分組權限不足。`,/* embeds: [],*/ components: []});
         } else {
             threadMsg.edit(
                 `<@${data[2]}>\n` + 
                 '恭喜您通過驗證，可以正式加入伺服器。\n' + 
                 'Congratulations, you have been verified and can officially join the server.'
             );
-            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 驗證通過。`, embeds: [], components: []});
+            interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 驗證通過。`,/* embeds: [],*/ components: []});
         }
 
     } else if(data[1] === 'fail') {
@@ -136,7 +136,7 @@ client.on('interactionCreate', async interaction => {
                 `Verification failed and was dismissed by the administrator. Please enter \`.verify\` in ${gData.reverifyTimelimit} minute to re-verify.`
             )
         }
-        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 駁回驗證。`, embeds: [], components: []});
+        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 駁回驗證。`,/* embeds: [],*/ components: []});
         if(gData.reverifyTimelimit <= 0) return;
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
         wait(gData.reverifyTimelimit * 60 * 1000).then(async () => {
@@ -164,7 +164,7 @@ client.on('interactionCreate', async interaction => {
             `The administrator rejected your request, so you were kicked from **${interaction.guild.name}**.`
         ).catch(() => {});
         await user.kick().catch(() => {});
-        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 踢出伺服器。`, embeds: [], components: []});
+        interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 由 ${interaction.user} 踢出伺服器。`,/* embeds: [],*/ components: []});
     }
 
 });
