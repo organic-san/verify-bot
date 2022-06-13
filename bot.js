@@ -263,10 +263,10 @@ client.on('guildMemberAdd', async member => {
         await thread.send(
             '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
             '只有管理員和伺服器擁有者會看見你的回答。' + 
-            '一共有 ' + queAmount + ' 個問題，請在問題下方輸入您的回答，並在 ' + gData.verifyTimelimit + ' 分鐘前完成驗證。\n' + 
+            '一共有 ' + queAmount + ' 個問題，請在__這個討論串__中輸入您的回答，並在 ' + gData.verifyTimelimit + ' 分鐘前完成驗證。\n' + 
             'Please answer the questions asked by the administrators to help them review your server membership application. ' + 
             'Only administrators and server owners will see your answers. ' + 
-            'There are a total of ' + queAmount + ' questions, please enter your answer below the question and complete the verification before ' + 
+            'There are a total of ' + queAmount + ' questions, please enter your answer __in this thread__ and complete the verification before ' + 
             gData.verifyTimelimit + ' minutes.'
         );
         
