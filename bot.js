@@ -246,7 +246,7 @@ client.on('guildMemberAdd', async member => {
         
         if(!gData.isWorking) return;
         if(verifying.includes(member.id)) return verifyChannel.send(
-            member.toString() + '您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
+            member.toString() + '\n您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
             'You have started the verification process, please go to to your verification thread to continue the verification process.'
         );
         verifying.push(member.id);
