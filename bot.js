@@ -81,7 +81,7 @@ client.on('interactionCreate', async interaction => {
      */
     let verifyChannel = await interaction.guild.channels.fetch(gData.verifyChannel);
     let backstageChannel = await interaction.guild.channels.fetch(gData.backstageChannel);
-    let thread = await verifyChannel.threads.fetch(data[3]);
+    let thread = await verifyChannel.threads.fetch(data[3]).catch(() => {});
     let threadMsg = await verifyChannel.messages.fetch(data[4]);
     if(!user) {
         thread.delete().catch(() => {});
