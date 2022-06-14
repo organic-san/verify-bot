@@ -84,7 +84,7 @@ client.on('interactionCreate', async interaction => {
     let thread = await verifyChannel.threads.fetch(data[3]).catch(() => {});
     let threadMsg = await verifyChannel.messages.fetch(data[4]).catch(() => {});
     if(!user) {
-        thread.delete().catch(() => {});
+        if(thread) thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`,/* embeds: [],*/ components: []});
         if(threadMsg) threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
@@ -96,7 +96,7 @@ client.on('interactionCreate', async interaction => {
         return;
     }
     if(data[1] === 'pass') {
-        thread.delete().catch(() => {});
+        if(thread) thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         let err = false;
         await user.roles.add(gData.role).catch(() => err = true);
@@ -117,7 +117,7 @@ client.on('interactionCreate', async interaction => {
         }
 
     } else if(data[1] === 'fail') {
-        thread.delete().catch(() => {});
+        if(thread) thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         if(threadMsg) threadMsg.edit(
             `<@${data[2]}>\n` + 
@@ -154,7 +154,7 @@ client.on('interactionCreate', async interaction => {
     } else if(data[1] === 'kick') {
         if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
-        thread.delete().catch(() => {});
+        if(thread) thread.delete().catch(() => {});
         if(threadMsg) threadMsg.edit(
             `<@${data[2]}>\n` + 
             '驗證失敗。Verification failed.'
