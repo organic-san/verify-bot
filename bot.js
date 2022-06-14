@@ -82,12 +82,12 @@ client.on('interactionCreate', async interaction => {
     let verifyChannel = await interaction.guild.channels.fetch(gData.verifyChannel);
     let backstageChannel = await interaction.guild.channels.fetch(gData.backstageChannel);
     let thread = await verifyChannel.threads.fetch(data[3]).catch(() => {});
-    let threadMsg = await verifyChannel.messages.fetch(data[4]);
+    let threadMsg = await verifyChannel.messages.fetch(data[4]).catch(() => {});
     if(!user) {
         thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 用戶不存在，無法繼續驗證。`,/* embeds: [],*/ components: []});
-        threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
+        if(threadMsg) threadMsg.edit(`<@${data[2]}>\n驗證取消。Verification cancelled.`);
         verifyChannel.send(
             `<@${data[2]}>\n` + 
             `取消驗證，因為無法確認用戶。如果您還在伺服器，請輸入\`.verify\`重新驗證。\n` + 
@@ -101,14 +101,14 @@ client.on('interactionCreate', async interaction => {
         let err = false;
         await user.roles.add(gData.role).catch(() => err = true);
         if(err) {
-            threadMsg.edit(
+            if(threadMsg) threadMsg.edit(
                 `<@${data[2]}>\n` + 
                 '發生錯誤：權限不足，請聯絡管理員。\n' + 
                 'Error: Permissions are not enough, please contact the administrator.'
             );
             interaction.message.edit({content: `<@${data[2]}> (${data[2]}) 驗證過程發生錯誤：身分組權限不足。`,/* embeds: [],*/ components: []});
         } else {
-            threadMsg.edit(
+            if(threadMsg) threadMsg.edit(
                 `<@${data[2]}>\n` + 
                 '恭喜您通過驗證，可以正式加入伺服器。\n' + 
                 'Congratulations, you have been verified and can officially join the server.'
@@ -119,7 +119,7 @@ client.on('interactionCreate', async interaction => {
     } else if(data[1] === 'fail') {
         thread.delete().catch(() => {});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
-        threadMsg.edit(
+        if(threadMsg) threadMsg.edit(
             `<@${data[2]}>\n` + 
             '驗證失敗。Verification failed.'
         );
@@ -155,7 +155,7 @@ client.on('interactionCreate', async interaction => {
         if(!user.kickable) return interaction.message.edit({content: `錯誤：權限不足，無法踢出此用戶。`});
         if(verifying.findIndex((i => i === data[2])) >= 0) verifying.splice(verifying.findIndex((i => i === data[2])), 1);
         thread.delete().catch(() => {});
-        threadMsg.edit(
+        if(threadMsg) threadMsg.edit(
             `<@${data[2]}>\n` + 
             '驗證失敗。Verification failed.'
         );
