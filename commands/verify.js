@@ -170,7 +170,8 @@ module.exports = {
                         '\n逾時，驗證失敗。\n' + 
                         'Timeout, verification failed.'
                     );
-                    if(!msg.member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author}。`});
+                    if(!msg.member) return backstage.send({content: `${msg.author} (${msg.author.id}) 用戶已退出伺服器。`});
+                    if(!msg.member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author} (${msg.author.id})。`});
                     await msg.author.send(
                         `由於您未在時間限制內完成驗證，因此您被踢出 **${msg.guild.name}**。\n` + 
                         `You have been kicked from **${msg.guild.name}** because you did not complete the verification within the time limit.`

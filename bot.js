@@ -387,7 +387,7 @@ client.on('guildMemberAdd', async member => {
                         '\n逾時，驗證失敗。\n' + 
                         'Timeout, verification failed.'
                     );
-                    if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${member}。`});
+                    if(!member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${member} (${member.id})。`});
                     await member.send(
                         `由於您未在時間限制內完成驗證，因此您被踢出 **${member.guild.name}**。\n` + 
                         `You have been kicked from **${member.guild.name}** because you did not complete the verification within the time limit.`
