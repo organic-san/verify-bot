@@ -58,8 +58,8 @@ module.exports = {
             })
             
         } else if(['aq', 'add-question'].includes(text[1])) {
+            let question = msg.content.slice(text[0].length + 1).trim().slice(text[1].length).trim().split(';')[0].trim();
             text[0] = ''; text[1] = '';
-            let question = text.join(' ').split(';')[0].trim();
             let answer = text.join(' ').split(';').slice(1);
             if(!question || !answer[0]) return msg.reply('請在指令後方加入問題與預設答案。');
             guildData.questionList.push({question, answer});
