@@ -25,9 +25,11 @@ module.exports = {
             .addField('.setting backstage-channel <channel>\n.setting bc <channel>', 
                 '設定後台頻道，進行人工驗證與訊息發送。')
             .addField('.setting add-question <question>;<ans1>;<ans2>...\n.setting aq <question>;<ans1>;<ans2>...', 
-                '設定驗證問題。問題與答案(可複數)需要用分號分開。')
+                '設定驗證問題。問題與答案(可複數)需要用分號(;)分開。')
             .addField('.setting show-question\n.setting sq', '顯示所有驗證問題。')
             .addField('.setting delete-question\n.setting dq', '刪除驗證問題。要刪除的問題在輸入指令後選擇。')
+            .addField('.setting edit-question\n.setting eq', '編輯驗證問題。要刪除的問題在輸入指令後選擇。')
+            .addField('.setting edit-answer\n.setting ea', '編輯驗證問題的答案。要刪除的問題在輸入指令後選擇。')
             .addField('.setting question-amount <amount>\n.setting qa <amount>', 
                 '設定要產生的問題總數。產生的問題將會隨機抽取直到達到設定的總數，或者當設定為0時會依序詢問所有問題。')
             .addField('.setting endow-role <role>\n.setting er <role>', '設定通過驗證後會賦予被驗證者的身分組。')

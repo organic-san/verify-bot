@@ -57,12 +57,12 @@ client.on('ready', () =>{
 
     setTimeout(async () => {
         console.log(`設定成功: ${new Date()}`);
-        client.channels.fetch('982831255236280360').then(channel => channel.send(`登入成功`));
+        client.channels.fetch('982831255236280360').then(channel => channel.send(`登入成功`)).catch(()=> {});
         isready = true;
         
     }, parseInt(process.env.LOADTIME) * 1000);
     setInterval(() => {
-        client.channels.fetch('982831255236280360').then(channel => channel.send(`alive`));
+        client.channels.fetch('982831255236280360').then(channel => channel.send(`alive`)).catch(()=> {});
     }, 10 * 60 * 1000);
         
 })

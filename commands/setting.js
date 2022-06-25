@@ -156,6 +156,102 @@ module.exports = {
                 );
             }
 
+        }  else if(['edit-question', 'eq'].includes(text[1])) {
+            let ql = guildData.questionList;
+            if(ql.length === 0) return msg.reply('目前沒有問題可以編輯，請先新增問題。')
+            for(let i = 0; i < Math.ceil(ql.length / 10); i++) {
+                const embed = new Discord.MessageEmbed()
+                    .setColor(process.env.EMBEDCOLOR)
+                    .setTitle(`${msg.guild.name} 驗證用問題一覽`)
+                    .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
+                    .setTimestamp();
+                for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                }
+                if(i === 0) {
+                    msg.reply({
+                        embeds: [embed],
+                        allowedMentions: {repliedUser: false}
+                    })
+                } else {
+                    msg.channel.send({embeds: [embed]})
+                }
+            }
+            msg.channel.send({content: '請輸入要編輯的問題代碼。'})
+            let collected = (await msg.channel.awaitMessages({
+                max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
+            })).last();
+
+            if(!collected) return msg.channel.send('超過了設定時間，因此取消設定。');
+            let id = parseInt(collected.content);
+            if(id !== id) return collected.reply('請正確輸入問題代碼。');
+            if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
+            let edited = ql[id - 1];
+
+            msg.channel.send({content: '請輸入變更後的問題名稱。'})
+            collected = (await msg.channel.awaitMessages({
+                max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
+            })).last();
+            if(!collected) return msg.channel.send('超過了設定時間，因此取消設定。');
+            let newque = collected.content;
+            ql.splice(id - 1, 1, {question: newque, answer: ql[id - 1].answer});
+
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            collected.reply(
+                `問題編輯完成: \n` + 
+                `原先問題: ${edited.question}\n` + 
+                `現在問題: ${guildData.questionList[id - 1].question}\n` + 
+                `回答: ${guildData.questionList[id - 1].answer.join('、')}`
+            );
+
+        }  else if(['edit-answer', 'ea'].includes(text[1])) {
+            let ql = guildData.questionList;
+            if(ql.length === 0) return msg.reply('目前沒有問題可以編輯，請先新增問題。')
+            for(let i = 0; i < Math.ceil(ql.length / 10); i++) {
+                const embed = new Discord.MessageEmbed()
+                    .setColor(process.env.EMBEDCOLOR)
+                    .setTitle(`${msg.guild.name} 驗證用問題一覽`)
+                    .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
+                    .setTimestamp();
+                for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                }
+                if(i === 0) {
+                    msg.reply({
+                        embeds: [embed],
+                        allowedMentions: {repliedUser: false}
+                    })
+                } else {
+                    msg.channel.send({embeds: [embed]})
+                }
+            }
+            msg.channel.send({content: '請輸入要編輯的問題代碼。'})
+            let collected = (await msg.channel.awaitMessages({
+                max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
+            })).last();
+
+            if(!collected) return msg.channel.send('超過了設定時間，因此取消設定。');
+            let id = parseInt(collected.content);
+            if(id !== id) return collected.reply('請正確輸入問題代碼。');
+            if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
+            let edited = ql[id - 1];
+
+            msg.channel.send({content: '請輸入變更後的所有答案，答案之間請用分號(;)分隔。'})
+            collected = (await msg.channel.awaitMessages({
+                max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
+            })).last();
+            if(!collected) return msg.channel.send('超過了設定時間，因此取消設定。');
+            let newans = collected.content;
+            ql.splice(id - 1, 1, {question: ql[id - 1].question, answer: newans.trim().split(';')});
+
+            fs.writeFileSync(`./guildData/${msg.guild.id}.json`, JSON.stringify(guildData, null, '\t'));
+            collected.reply(
+                `問題編輯完成: \n` + 
+                `問題: ${guildData.questionList[id - 1].question}\n` + 
+                `原先回答: ${edited.answer.join('、')}\n` + 
+                `現在回答: ${guildData.questionList[id - 1].answer.join('、')}`
+            );
+
         } else if(['endow-role', 'er'].includes(text[1])) {
             let role = text[2];
             if(!role) return msg.reply('請在指令後方加入身分組或身分組ID。');
