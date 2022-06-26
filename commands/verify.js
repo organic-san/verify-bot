@@ -97,7 +97,7 @@ module.exports = {
                     .setFooter({text: 'user Id: ' +  msg.author.id});
 
                     answer.forEach((ans, ind) => {
-                        embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
+                        embed.addField(`問題: ${queList[ind].question.length > 250 ? queList[ind].question.substring(0, 250) + '...' : queList[ind].question}`, `回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
                     })
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()

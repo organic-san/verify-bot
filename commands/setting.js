@@ -83,7 +83,7 @@ module.exports = {
                     .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                     .setTimestamp();
                 for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
-                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question.length > 240 ? ql[i * 10 + j].question.substring(0, 240) + '...' : ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
                 }
                 if(i === 0) {
                     msg.reply({
@@ -105,7 +105,7 @@ module.exports = {
                     .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                     .setTimestamp();
                 for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
-                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question.length > 240 ? ql[i * 10 + j].question.substring(0, 240) + '...' : ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
                 }
                 if(i === 0) {
                     msg.reply({
@@ -166,7 +166,7 @@ module.exports = {
                     .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                     .setTimestamp();
                 for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
-                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question.length > 240 ? ql[i * 10 + j].question.substring(0, 240) + '...' : ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
                 }
                 if(i === 0) {
                     msg.reply({
@@ -214,7 +214,7 @@ module.exports = {
                     .setFooter({text: `${client.user.tag}`, iconURL: `${client.user.displayAvatarURL({dynamic: true})}`})
                     .setTimestamp();
                 for(let j = 0; j < Math.min(i * 10 + 10, ql.length - i * 10); j++) {
-                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
+                    embed.addField(`${i * 10 + j + 1}. ${ql[i * 10 + j].question.length > 240 ? ql[i * 10 + j].question.substring(0, 240) + '...' : ql[i * 10 + j].question}`, `答案一覽: ${ql[i * 10 + j].answer.join('、')}`)
                 }
                 if(i === 0) {
                     msg.reply({
