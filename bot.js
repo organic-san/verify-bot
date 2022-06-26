@@ -316,7 +316,7 @@ client.on('guildMemberAdd', async member => {
                     .setFooter({text: 'user Id: ' +  member.id});
 
                     answer.forEach((ans, ind) => {
-                        embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}`);
+                        embed.addField(`問題: ${queList[ind].question}`, `回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
                     })
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
