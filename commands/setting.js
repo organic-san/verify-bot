@@ -187,7 +187,12 @@ module.exports = {
             if(id !== id) return collected.reply('請正確輸入問題代碼。');
             if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
             let edited = ql[id - 1];
-
+            
+            await msg.channel.send(
+                `所選擇的問題如下: \n` + 
+                `問題: ${guildData.questionList[id - 1].question}\n` + 
+                `回答: ${guildData.questionList[id - 1].answer.join('、')}`
+            );
             msg.channel.send({content: '請輸入變更後的問題名稱。'})
             collected = (await msg.channel.awaitMessages({
                 max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
@@ -236,6 +241,11 @@ module.exports = {
             if(id <= 0 || id > ql.length) return collected.reply('請確保輸入的問題代碼在上方顯示的問題一覽的區間。');
             let edited = ql[id - 1];
 
+            await msg.channel.send(
+                `所選擇的問題如下: \n` + 
+                `問題: ${guildData.questionList[id - 1].question}\n` + 
+                `回答: ${guildData.questionList[id - 1].answer.join('、')}`
+            );
             msg.channel.send({content: '請輸入變更後的所有答案，答案之間請用分號(;)分隔。'})
             collected = (await msg.channel.awaitMessages({
                 max: 1, time: 3 * 60 * 1000, filter: (m) => m.author.id === msg.author.id
