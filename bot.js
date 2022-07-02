@@ -72,7 +72,7 @@ client.on('interactionCreate', async interaction => {
     if(!interaction.isButton()) return;
     let data = interaction.customId.split(';');
     if(data[0] !== 'verify') return;
-    interaction.deferUpdate();
+    interaction.deferUpdate().catch(() => {});
     if(!interaction.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)) return;
     let gData = guildData.get(interaction.guild.id);
     let user = await interaction.guild.members.fetch(data[2]).catch(() => {}); 
