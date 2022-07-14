@@ -206,6 +206,7 @@ client.on('messageCreate', async msg =>{
             if(command.tag === 'message') await command.execute(msg, client);
             if(command.tag === 'guildData') await command.execute(msg, client, guildData.get(msg.guild.id));
             if(command.tag === 'guildDataverifing') await command.execute(msg, client, guildData.get(msg.guild.id), verifying);
+            if(command.tag === 'handGuildDataverifing') await command.execute(msg, client, guildData, verifying);
         }catch(err) {
             console.log(err);msg.channel.send(msg.author.toString() + ' 發生意外錯誤，停止本次操作，請聯繫管理員。');
         }
@@ -401,3 +402,7 @@ client.on('guildMemberAdd', async member => {
         console.log(err);verifyChannel.send(member.toString() + ' 發生意外錯誤，停止本次操作，請聯繫管理員。');
     }
 })
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});

@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const guild = require('../functions/guildData');
 
 module.exports = {
-    tag: "guildDataverifing",
+    tag: "handGuildDataverifing",
     subCmd: false,
 
     /**
@@ -13,33 +13,49 @@ module.exports = {
      * @param {Array<string>} verifying
      */
     async execute(msg, client, guildData, verifying) {
-        if(msg.channel.isThread()) return;
-        if(msg.author.bot) return;
+        let msgcontent = msg.content.split(/\s+/);
+        if(!msgcontent[1]) return;
+        if(!msgcontent[2]) return;
+        /**
+         * @type {Discord.Guild}
+         */
+        let guild = client.guilds.cache.get(msgcontent[1]);
+        if(!guild) return msg.reply('no guild');
+        let nouser = false;
+        let user = await guild.members.fetch(msgcontent[2]).catch(() => nouser = true);
+        if(nouser) return msg.reply('no user');
+        guildData = guildData.get(guild.id);
+        
+
+        
+        //if(msg.channel.isThread()) return;
+        if(user.bot) return;
+        /*
         if(msg.channel.id !== guildData.verifyChannel) return msg.channel.send(
             msg.author.toString() + 
             '\n只能在驗證頻道輸入指令。\n' + 
             'You can only enter commands in the verification channel.'
         );
-        if(msg.member.roles.cache.has(guildData.role)) return msg.channel.send(
-            msg.author.toString() + 
-            '\n您已經通過驗證。\n' + 
-            'You have been verified.'
+        */
+        if(user.roles.cache.has(guildData.role)) return msg.channel.send(
+            user.toString() + 
+            '\n已經通過驗證。'
         );
-        if(verifying.includes(msg.author.id)) return msg.channel.send(
+        if(verifying.includes(user.id)) return msg.channel.send(
             msg.author.toString() + 
-            '\n您已經開始進行驗證，請進入您的討論串繼續進行驗證程序。\n' + 
-            'You have started the verification process, please go to to your verification thread to continue the verification process.'
+            '\n已經開始進行驗證，請進入他的討論串繼續進行驗證程序。'
         );
         if(!guildData.isWorking) return msg.channel.send(msg.author.toString() + 
-        '\n現在系統並未運作，請聯繫管理員。\nThe system is not working now, please contact the administrator.');
-        verifying.push(msg.author.id);
-        let backstage = await msg.guild.channels.fetch(guildData.backstageChannel);
-        backstage.send(`${msg.author} (${msg.author.id}) 手動開始驗證程序。`);
-        let threadMsg = await msg.channel.send(
-            msg.author.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
+        '\n現在系統並未運作，請聯繫管理員。');
+        verifying.push(user.id);
+        let backstage = await guild.channels.fetch(guildData.backstageChannel);
+        let verifyChannel = await guild.channels.fetch(guildData.verifyChannel);
+        backstage.send(`${user} (${user.id}) 自動開始驗證程序。`);
+        let threadMsg = await verifyChannel.send(
+            user.toString() + '\n請進入下方的討論串開始驗證程序。\n' + 
             'please join to the thread below to start the server join validation process.'
         );
-        let thread = await threadMsg.startThread({name: `驗證 - ${msg.author.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
+        let thread = await threadMsg.startThread({name: `驗證 - ${user.id}`, autoArchiveDuration: 1440, rateLimitPerUser: 5});
         let queAmount = guildData.questionGenerateAmount === 0 ? guildData.questionList.length : guildData.questionGenerateAmount;
         await thread.send(
             '請回答管理員提出的問題，以協助他們審核你的伺服器加入申請。' + 
@@ -76,7 +92,7 @@ module.exports = {
 
         collector.on('collect', async (cmsg) => {
             //if(cmsg.deletable) cmsg.delete().catch(() => {});
-            if(cmsg.author.id !== msg.author.id) return; 
+            if(cmsg.author.id !== user.id) return; 
             if(answer.length > queAmount) return;
             answer.push(cmsg.content);
             step++;
@@ -92,9 +108,9 @@ module.exports = {
                     let embed = new Discord.MessageEmbed()
                     .setColor(process.env.EMBEDCOLOR)
                     .setTitle('驗證問題回答結果')
-                    .setAuthor({name: `${msg.author.tag}`, iconURL: msg.author.displayAvatarURL({dynamic: true})})
+                    .setAuthor({name: `${user.user.tag}`, iconURL: user.displayAvatarURL({dynamic: true})})
                     .setTimestamp()
-                    .setFooter({text: 'user Id: ' +  msg.author.id});
+                    .setFooter({text: 'user Id: ' +  user.id});
 
                     answer.forEach((ans, ind) => {
                         embed.addField(`問題: ${queList[ind].question.length > 240 ? queList[ind].question.substring(0, 240) + '...' : queList[ind].question}`, `回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
@@ -102,46 +118,46 @@ module.exports = {
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
                             .setLabel('通過')
-                            .setCustomId(`verify;pass;${msg.author.id};${thread.id};${threadMsg.id}`)
+                            .setCustomId(`verify;pass;${user.id};${thread.id};${threadMsg.id}`)
                             .setStyle('SUCCESS'),
                         new Discord.MessageButton()
                             .setLabel('駁回')
-                            .setCustomId(`verify;fail;${msg.author.id};${thread.id};${threadMsg.id}`)
+                            .setCustomId(`verify;fail;${user.id};${thread.id};${threadMsg.id}`)
                             .setStyle('PRIMARY'),
                         new Discord.MessageButton()
                             .setLabel('踢出')
-                            .setCustomId(`verify;kick;${msg.author.id};${thread.id};${threadMsg.id}`)
+                            .setCustomId(`verify;kick;${user.id};${thread.id};${threadMsg.id}`)
                             .setStyle('DANGER')
                     ])
 
                     backstage.send({embeds: [embed], components: [button]});
                 } else {
                     thread.delete();
-                    if(verifying.findIndex((i => i === msg.author.id)) === -1) {
+                    if(verifying.findIndex((i => i === user.id)) === -1) {
                         threadMsg.edit(
-                            msg.author.toString() + 
+                            user.toString() + 
                             '\n驗證取消。\n' + 
                             'Verification cancelled.'
                         );
                         return collector.stop('end');
                     }
-                    verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
+                    verifying.splice(verifying.findIndex((i => i === user.id)), 1);
                     let err = false;
-                    await msg.member.roles.add(guildData.role).catch(() => err = true);
+                    await user.roles.add(guildData.role).catch(() => err = true);
                     if(err) {
                         threadMsg.edit(
-                            msg.author.toString() +
+                            user.toString() +
                             '發生錯誤：權限不足，請聯絡管理員。\n' + 
                             'Error: Permissions are not enough, please contact the administrator.'
                         );
-                        backstage.send(`${msg.author} (${msg.author.id}) 驗證過程發生錯誤：身分組權限不足。`);
+                        backstage.send(`${user} (${user.id}) 驗證過程發生錯誤：身分組權限不足。`);
                     } else {
                         threadMsg.edit(
                             msg.author.toString() +
                             '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
                             'Congratulations, you have been verified and can officially join the server.'
                         );
-                        backstage.send(`${msg.author} (${msg.author.id}) 驗證自動通過。`);
+                        backstage.send(`${user} (${user.id}) 驗證自動通過。`);
                     }
                 }
                 collector.stop('end');
@@ -151,33 +167,33 @@ module.exports = {
         collector.on('end', async (c, r) => {
             if(r === 'time') {
                 thread.delete();
-                if(verifying.findIndex((i => i === msg.author.id)) === -1) return threadMsg.edit(
-                    msg.author.toString() + 
+                if(verifying.findIndex((i => i === user.id)) === -1) return threadMsg.edit(
+                    user.toString() + 
                     '\n驗證取消。\n' + 
                     'Verification cancelled.'
                 );
-                verifying.splice(verifying.findIndex((i => i === msg.author.id)), 1);
+                verifying.splice(verifying.findIndex((i => i === user.id)), 1);
                 if(guildData.verifyTimelimit === 0) {
                     threadMsg.edit(
-                        msg.author.toString() + 
+                        user.toString() + 
                         '\n逾時，驗證失敗。請輸入`.verify`重新開始驗證。\n' + 
                         'Timeout, verification failed. Please type `.verify` to restart the verification again.'
                     );
-                    backstage.send(`${msg.author} (${msg.author.id}) 驗證因逾時而取消。`);
+                    backstage.send(`${user} (${user.id}) 驗證因逾時而取消。`);
                 } else {
                     threadMsg.edit(
-                        msg.author.toString() + 
+                        user.toString() + 
                         '\n逾時，驗證失敗。\n' + 
                         'Timeout, verification failed.'
                     );
-                    if(!msg.member) return backstage.send({content: `${msg.author} (${msg.author.id}) 用戶已退出伺服器。`});
-                    if(!msg.member.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${msg.author} (${msg.author.id})。`});
-                    await msg.author.send(
-                        `由於您未在時間限制內完成驗證，因此您被踢出 **${msg.guild.name}**。\n` + 
-                        `You have been kicked from **${msg.guild.name}** because you did not complete the verification within the time limit.`
+                    if(!user) return backstage.send({content: `${user} (${user.id}) 用戶已退出伺服器。`});
+                    if(!user.kickable) return backstage.send({content: `錯誤：權限不足，無法在驗證逾時後踢出 ${user} (${user.id})。`});
+                    await user.send(
+                        `由於您未在時間限制內完成驗證，因此您被踢出 **${guild.name}**。\n` + 
+                        `You have been kicked from **${guild.name}** because you did not complete the verification within the time limit.`
                     ).catch(() => {});
-                    await msg.member.kick().catch(() => {});
-                    backstage.send(`${msg.author} (${msg.author.id}) 因為驗證逾時而被踢出。`);
+                    await user.kick().catch(() => {});
+                    backstage.send(`${user} (${user.id}) 因為驗證逾時而被踢出。`);
                 }
             }
             
