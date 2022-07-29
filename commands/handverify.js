@@ -26,8 +26,6 @@ module.exports = {
         if(nouser) return msg.reply('no user');
         guildData = guildData.get(guild.id);
         
-
-        
         //if(msg.channel.isThread()) return;
         if(user.bot) return;
         /*
