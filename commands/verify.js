@@ -92,13 +92,16 @@ module.exports = {
                     let embed = new Discord.MessageEmbed()
                     .setColor(process.env.EMBEDCOLOR)
                     .setTitle('驗證問題回答結果')
-                    .setAuthor({name: `${msg.author.tag}`, iconURL: msg.author.displayAvatarURL({dynamic: true})})
+                    .setAuthor({name: `${msg.author.tag} (${msg.author.id})`, iconURL: msg.author.displayAvatarURL({dynamic: true})})
                     .setTimestamp()
-                    .setFooter({text: 'user Id: ' +  msg.author.id});
 
                     answer.forEach((ans, ind) => {
                         embed.addField(`問題${ind + 1}`, `問題: ${queList[ind].question}\n回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
                     })
+                    embed.addField(`帳號基本資料`, 
+                        `帳號ID: ` + msg.author.id +
+                        `\n帳號建立日期: <t:` + Math.floor(msg.author.createdTimestamp / 1000) + ":D>");
+
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
                             .setLabel('通過')

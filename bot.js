@@ -313,12 +313,15 @@ client.on('guildMemberAdd', async member => {
                     .setColor(process.env.EMBEDCOLOR)
                     .setTitle('驗證問題回答結果')
                     .setAuthor({name: `${member.user.tag}`, iconURL: member.displayAvatarURL({dynamic: true})})
-                    .setTimestamp()
-                    .setFooter({text: 'user Id: ' +  member.id});
+                    .setTimestamp();
 
                     answer.forEach((ans, ind) => {
                         embed.addField(`問題 ${ind + 1}`, `問題: ${queList[ind].question}\n回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
                     })
+                    embed.addField(`帳號基本資料`, 
+                        `帳號ID: ` + member.id + 
+                        `\n帳號建立日期: <t:` + Math.floor(member.user.createdTimestamp / 1000) + ":D>");
+
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
                             .setLabel('通過')

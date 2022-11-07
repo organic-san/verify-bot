@@ -40,10 +40,10 @@ module.exports = {
             '\n已經通過驗證。'
         );
         if(verifying.includes(user.id)) return msg.channel.send(
-            msg.author.toString() + 
+            user.toString() + 
             '\n已經開始進行驗證，請進入他的討論串繼續進行驗證程序。'
         );
-        if(!guildData.isWorking) return msg.channel.send(msg.author.toString() + 
+        if(!guildData.isWorking) return msg.channel.send(user.toString() + 
         '\n現在系統並未運作，請聯繫管理員。');
         verifying.push(user.id);
         let backstage = await guild.channels.fetch(guildData.backstageChannel);
@@ -107,12 +107,15 @@ module.exports = {
                     .setColor(process.env.EMBEDCOLOR)
                     .setTitle('驗證問題回答結果')
                     .setAuthor({name: `${user.user.tag}`, iconURL: user.displayAvatarURL({dynamic: true})})
-                    .setTimestamp()
-                    .setFooter({text: 'user Id: ' +  user.id});
+                    .setTimestamp();
 
                     answer.forEach((ans, ind) => {
                         embed.addField(`問題: ${queList[ind].question.length > 240 ? queList[ind].question.substring(0, 240) + '...' : queList[ind].question}`, `回答: ${ans}\n預設答案: ${queList[ind].answer.join('、')}`);
-                    })
+                    });
+                    embed.addField(`帳號基本資料`, 
+                        `帳號ID: ` + user.id +
+                        `\n帳號建立日期: <t:` + Math.floor(user.user.createdTimestamp / 1000) + ":D>");
+
                     let button = new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
                             .setLabel('通過')
@@ -151,7 +154,7 @@ module.exports = {
                         backstage.send(`${user} (${user.id}) 驗證過程發生錯誤：身分組權限不足。`);
                     } else {
                         threadMsg.edit(
-                            msg.author.toString() +
+                            user.toString() +
                             '\n恭喜您通過驗證，可以正式加入伺服器。\n' + 
                             'Congratulations, you have been verified and can officially join the server.'
                         );
